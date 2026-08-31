@@ -133,6 +133,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'teachers' %}active{% endif %}" href="{% url 'teachers' %}">
+                            <i class="bi bi-person-badge me-1"></i> Docentes
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if active_tab == 'courses' %}active{% endif %}" href="{% url 'courses' %}">
                             <i class="bi bi-book me-1"></i> Cursos
                         </a>
@@ -151,9 +156,9 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
                         <li><h6 class="dropdown-header text-uppercase">API REST Endpoints</h6></li>
+                        <li><a class="dropdown-item" href="/api/teachers/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/teachers/</a></li>
                         <li><a class="dropdown-item" href="/api/courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/courses/</a></li>
                         <li><a class="dropdown-item" href="/api/students/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/students/</a></li>
-                        <li><a class="dropdown-item" href="/api/teachers/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/teachers/</a></li>
                         <li><a class="dropdown-item" href="/api/student-courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/student-courses/</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="bi bi-shield-lock text-warning me-2"></i>Django Admin</a></li>
@@ -169,6 +174,19 @@
         {% endblock %}
     </main>
 
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST (CRUD FEEDBACK) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="crudToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <span>Operación realizada con éxito</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER INFORMATIVO -->
     <footer class="footer py-3 text-center">
         <div class="container">
@@ -182,6 +200,50 @@
     <!-- Bootstrap 5.3 Bundle JS CDN (incluye Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
+    <script>
+        // Función utilitaria para obtener cookies (CSRF Token)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función global para mostrar notificaciones Toast
+        function showToast(message, type = 'success') {
+            const toastEl = document.getElementById('crudToast');
+            const toastMsgEl = document.getElementById('toastMessage');
+            
+            // Colores según tipo
+            toastEl.className = 'toast align-items-center text-white border-0 shadow';
+            if (type === 'success') {
+                toastEl.classList.add('bg-success');
+                toastMsgEl.innerHTML = `<i class="bi bi-check-circle-fill fs-5"></i> <span>${message}</span>`;
+            } else if (type === 'danger' || type === 'error') {
+                toastEl.classList.add('bg-danger');
+                toastMsgEl.innerHTML = `<i class="bi bi-x-circle-fill fs-5"></i> <span>${message}</span>`;
+            } else if (type === 'warning') {
+                toastEl.classList.add('bg-warning', 'text-dark');
+                toastMsgEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill fs-5"></i> <span>${message}</span>`;
+            } else {
+                toastEl.classList.add('bg-primary');
+                toastMsgEl.innerHTML = `<i class="bi bi-info-circle-fill fs-5"></i> <span>${message}</span>`;
+            }
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        }
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+

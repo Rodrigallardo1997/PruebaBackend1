@@ -1,33 +1,39 @@
 {% extends "academic/base.html" %}
 
-{% block title %}Listado de Estudiantes - Gestión Académica{% endblock %}
+{% block title %}Gestión de Estudiantes e Inscripciones - CRUD{% endblock %}
 
 {% block content %}
 <!--
-    Plantilla: students.html
+    Plantilla: students.html (CRUD Estudiantes & Inscripciones)
     Evaluación N°1: Desarrollo Backend con Django & DRF
     Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
     
-    Esta plantilla implementa el enmascaramiento del endpoint REST /api/students/.
-    El frontend HTML realiza una petición asíncrona mediante fetch() para obtener
-    los alumnos matriculados y sus asignaturas inscritas, presentándolos en una tabla interactiva.
+    Implementa operaciones completas de CRUD para Student y StudentCourse:
+    - CREATE Student:    POST /api/students/
+    - READ Student:      GET  /api/students/
+    - UPDATE Student:    PUT  /api/students/{id}/
+    - DELETE Student:    DELETE /api/students/{id}/
+    - MANAGE Enrollments: POST /api/student-courses/ & DELETE /api/student-courses/{id}/
 -->
 
 <div class="row mb-4">
-    <div class="col-md-8">
+    <div class="col-md-7">
         <h2 class="h3 fw-bold text-dark mb-1">
-            <i class="bi bi-people-fill text-primary me-2"></i>Estudiantes Matriculados
+            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Estudiantes
         </h2>
         <p class="text-muted mb-0">
-            Listado de alumnos matriculados y sus asignaturas inscritas según el modelo relacional (Student - StudentCourse).
+            Administración completa de estudiantes matriculados e inscripción de asignaturas académicas.
         </p>
     </div>
-    <div class="col-md-4 text-md-end align-self-center mt-3 mt-md-0">
-        <button id="btnReload" class="btn btn-outline-primary btn-sm rounded-pill shadow-sm px-3">
-            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Datos
+    <div class="col-md-5 text-md-end align-self-center mt-3 mt-md-0 d-flex justify-content-md-end gap-2 flex-wrap">
+        <button class="btn btn-primary btn-sm rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+            <i class="bi bi-person-plus-fill me-1"></i> Nuevo Estudiante
         </button>
-        <a href="/api/students/" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3 ms-1">
-            <i class="bi bi-box-arrow-up-right me-1"></i> Ver JSON API
+        <button id="btnReload" class="btn btn-outline-secondary btn-sm rounded-pill shadow-sm px-3">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+        </button>
+        <a href="/api/students/" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3">
+            <i class="bi bi-box-arrow-up-right me-1"></i> JSON API
         </a>
     </div>
 </div>
@@ -53,13 +59,13 @@
             <p class="mt-3 mb-0 text-secondary fw-medium">Consultando endpoint asíncrono <code>/api/students/</code>...</p>
         </div>
 
-        <!-- Mensaje de Error si la petición falla -->
+        <!-- Alerta de Error -->
         <div id="errorState" class="alert alert-danger m-4 d-none" role="alert">
             <div class="d-flex align-items-center">
                 <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
                 <div>
                     <h6 class="alert-heading mb-1">Error al consultar el endpoint</h6>
-                    <p class="mb-0 small" id="errorMessage">No se pudo obtener la respuesta desde el servidor.</p>
+                    <p class="mb-0 small" id="errorMessage"></p>
                 </div>
             </div>
         </div>
@@ -69,23 +75,179 @@
             <table class="table table-hover align-middle mb-0 d-none" id="studentsTable">
                 <thead>
                     <tr>
-                        <th scope="col" style="width: 80px;" class="text-center">ID</th>
+                        <th scope="col" style="width: 70px;" class="text-center">ID</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Apellido</th>
                         <th scope="col">Nombre Completo</th>
                         <th scope="col">Asignaturas Inscritas</th>
-                        <th scope="col" class="text-center" style="width: 130px;">Matrícula</th>
+                        <th scope="col" class="text-center" style="width: 200px;">Acciones (CRUD)</th>
                     </tr>
                 </thead>
                 <tbody id="studentsTableBody">
-                    <!-- Filas insertadas dinámicamente con JavaScript fetch() -->
+                    <!-- Contenido dinámico -->
                 </tbody>
             </table>
         </div>
     </div>
     <div class="card-footer bg-white text-muted py-2 small d-flex justify-content-between">
         <span id="recordCount">Cargando registros...</span>
-        <span><i class="bi bi-shield-check text-success me-1"></i>Endpoint DRF activo</span>
+        <span><i class="bi bi-shield-check text-success me-1"></i>Endpoint /api/students/ activo</span>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: CREAR ESTUDIANTE (POST /api/students/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="createStudentModal" tabindex="-1" aria-labelledby="createStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fs-6 fw-bold" id="createStudentModalLabel">
+                    <i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Estudiante
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createStudentForm">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="createStudentFirstName" class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="createStudentFirstName" required placeholder="Ej: Rodrigo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="createStudentLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="createStudentLastName" required placeholder="Ej: Gallardo">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary px-3" id="btnSubmitCreateStudent">
+                        <i class="bi bi-check-circle me-1"></i> Guardar Estudiante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: EDITAR ESTUDIANTE (PUT /api/students/{id}/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fs-6 fw-bold" id="editStudentModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Editar Estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editStudentForm">
+                <input type="hidden" id="editStudentId">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="editStudentFirstName" class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editStudentFirstName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStudentLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editStudentLastName" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-warning px-3" id="btnSubmitEditStudent">
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: GESTIONAR INSCRIPCIONES (CRUD StudentCourse) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="enrollModal" tabindex="-1" aria-labelledby="enrollModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title fs-6 fw-bold" id="enrollModalLabel">
+                    <i class="bi bi-card-checklist me-2"></i>Inscripciones de <span id="enrollStudentName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="enrollStudentId">
+
+                <!-- Formulario para agregar una nueva inscripción -->
+                <div class="card p-3 mb-4 bg-light border">
+                    <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-plus-circle text-primary me-1"></i>Inscribir nueva asignatura:</h6>
+                    <form id="addEnrollmentForm" class="row g-2 align-items-center">
+                        <div class="col-md-9">
+                            <select class="form-select form-select-sm" id="enrollCourseSelect" required>
+                                <option value="" disabled selected>Selecciona un curso disponible...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-check2 me-1"></i> Inscribir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de asignaturas actualmente inscritas -->
+                <h6 class="fw-bold mb-2 text-secondary"><i class="bi bi-journal-check me-1"></i>Asignaturas actualmente matriculadas:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Asignatura</th>
+                                <th>Docente</th>
+                                <th class="text-center" style="width: 100px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="currentEnrollmentsBody">
+                            <!-- Filas dinámicas de inscripciones -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: CONFIRMAR ELIMINAR ESTUDIANTE (DELETE /api/students/{id}/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fs-6 fw-bold" id="deleteStudentModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar Estudiante
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <input type="hidden" id="deleteStudentId">
+                <i class="bi bi-trash3 text-danger display-4 d-block mb-3"></i>
+                <h6 class="fw-bold mb-2">¿Estás seguro de que deseas eliminar este estudiante?</h6>
+                <p class="text-muted small mb-0" id="deleteStudentName"></p>
+                <div class="alert alert-warning py-2 mt-3 small text-start">
+                    <i class="bi bi-info-circle me-1"></i> Las inscripciones del alumno serán canceladas automáticamente.
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-sm btn-danger px-3" id="btnConfirmDeleteStudent">
+                    <i class="bi bi-trash-fill me-1"></i> Sí, Eliminar
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -93,19 +255,15 @@
 {% block extra_js %}
 <script>
     /**
-     * Script Asíncrono para Consumo de API REST (/api/students/)
+     * Lógica Asíncrona CRUD para Estudiantes e Inscripciones
      * Estudiante: Rodrigo Gallardo
-     * 
-     * Implementa:
-     * 1. Consulta asíncrona mediante fetch() en segundo plano.
-     * 2. Transformación de respuesta JSON.
-     * 3. Manipulación del DOM para renderizar dinámicamente cada estudiante y sus cursos.
-     * 4. Filtrado en tiempo real.
      */
 
     let studentsData = [];
+    let allCoursesList = [];
+    let currentStudentObj = null;
 
-    // Referencias al DOM
+    // Referencias DOM
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const errorMessage = document.getElementById('errorMessage');
@@ -115,7 +273,27 @@
     const filterInput = document.getElementById('filterInput');
     const btnReload = document.getElementById('btnReload');
 
-    // Función asíncrona para consultar /api/students/
+    // Modales Bootstrap
+    const createModal = new bootstrap.Modal(document.getElementById('createStudentModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+    const enrollModal = new bootstrap.Modal(document.getElementById('enrollModal'));
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteStudentModal'));
+
+    // Cargar cursos disponibles para el formulario de inscripción
+    async function loadAllCourses() {
+        try {
+            const response = await fetch('/api/courses/');
+            if (response.ok) {
+                allCoursesList = await response.json();
+            }
+        } catch (e) {
+            console.error('Error al cargar cursos:', e);
+        }
+    }
+
+    // =========================================================================
+    // 1. READ (Listar Estudiantes)
+    // =========================================================================
     async function fetchStudents() {
         loadingState.classList.remove('d-none');
         studentsTable.classList.add('d-none');
@@ -125,20 +303,16 @@
         try {
             const response = await fetch('/api/students/', {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
 
             studentsData = await response.json();
             renderTable(studentsData);
 
         } catch (error) {
-            console.error('Error al obtener estudiantes:', error);
+            console.error('Error:', error);
             loadingState.classList.add('d-none');
             errorState.classList.remove('d-none');
             errorMessage.textContent = `Detalle del error: ${error.message}`;
@@ -146,7 +320,6 @@
         }
     }
 
-    // Función para renderizar los registros en la tabla
     function renderTable(data) {
         studentsTableBody.innerHTML = '';
 
@@ -155,13 +328,12 @@
                 <tr>
                     <td colspan="6" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                        No se encontraron estudiantes registrados.
+                        No se encontraron estudiantes registrados. Haz clic en "Nuevo Estudiante".
                     </td>
                 </tr>
             `;
         } else {
             data.forEach(student => {
-                // Renderizar badges para cada asignatura inscrita
                 let coursesBadges = '';
                 if (student.enrolled_courses && student.enrolled_courses.length > 0) {
                     coursesBadges = student.enrolled_courses.map(item => `
@@ -170,8 +342,10 @@
                         </span>
                     `).join(' ');
                 } else {
-                    coursesBadges = '<span class="text-muted small fst-italic">Sin inscripciones activas</span>';
+                    coursesBadges = '<span class="text-muted small fst-italic">Sin asignaturas</span>';
                 }
+
+                const fullName = student.full_name || `${student.first_name} ${student.last_name}`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -181,14 +355,20 @@
                     <td>
                         <div class="fw-semibold text-dark">
                             <i class="bi bi-person-circle text-primary me-1"></i>
-                            ${student.full_name || `${student.first_name} ${student.last_name}`}
+                            ${fullName}
                         </div>
                     </td>
                     <td>${coursesBadges}</td>
                     <td class="text-center">
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-                            <i class="bi bi-check-circle me-1"></i>Activo
-                        </span>
+                        <button class="btn btn-outline-info btn-sm me-1" onclick="openEnrollModal(${student.id})" title="Gestionar Cursos">
+                            <i class="bi bi-card-checklist"></i> Cursos
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${student.id}, '${escapeHtml(student.first_name)}', '${escapeHtml(student.last_name)}')" title="Editar Estudiante">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="openDeleteModal(${student.id}, '${escapeHtml(fullName)}')" title="Eliminar Estudiante">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
                     </td>
                 `;
                 studentsTableBody.appendChild(tr);
@@ -200,7 +380,245 @@
         recordCount.textContent = `Total: ${data.length} estudiante(s) registrado(s)`;
     }
 
-    // Filtrado en vivo de la tabla
+    function escapeHtml(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // =========================================================================
+    // 2. CREATE (Crear Estudiante vía POST)
+    // =========================================================================
+    document.getElementById('createStudentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const firstName = document.getElementById('createStudentFirstName').value.trim();
+        const lastName = document.getElementById('createStudentLastName').value.trim();
+
+        if (!firstName || !lastName) {
+            showToast('Por favor completa todos los campos requeridos', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/students/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+            createModal.hide();
+            document.getElementById('createStudentForm').reset();
+            showToast(`Estudiante "${firstName} ${lastName}" registrado con éxito`, 'success');
+            fetchStudents();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al guardar: ${error.message}`, 'danger');
+        }
+    });
+
+    // =========================================================================
+    // 3. UPDATE (Editar Estudiante vía PUT)
+    // =========================================================================
+    function openEditModal(id, firstName, lastName) {
+        document.getElementById('editStudentId').value = id;
+        document.getElementById('editStudentFirstName').value = firstName;
+        document.getElementById('editStudentLastName').value = lastName;
+        editModal.show();
+    }
+
+    document.getElementById('editStudentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editStudentId').value;
+        const firstName = document.getElementById('editStudentFirstName').value.trim();
+        const lastName = document.getElementById('editStudentLastName').value.trim();
+
+        try {
+            const response = await fetch(`/api/students/${id}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+            editModal.hide();
+            showToast('Estudiante actualizado con éxito', 'success');
+            fetchStudents();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al actualizar: ${error.message}`, 'danger');
+        }
+    });
+
+    // =========================================================================
+    // 4. DELETE (Eliminar Estudiante vía DELETE)
+    // =========================================================================
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteStudentId').value = id;
+        document.getElementById('deleteStudentName').textContent = `Estudiante: ${name} (ID: #${id})`;
+        deleteModal.show();
+    }
+
+    document.getElementById('btnConfirmDeleteStudent').addEventListener('click', async function() {
+        const id = document.getElementById('deleteStudentId').value;
+
+        try {
+            const response = await fetch(`/api/students/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                }
+            });
+
+            if (!response.ok && response.status !== 204) throw new Error(`HTTP Error ${response.status}`);
+
+            deleteModal.hide();
+            showToast('Estudiante eliminado con éxito', 'success');
+            fetchStudents();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al eliminar: ${error.message}`, 'danger');
+        }
+    });
+
+    // =========================================================================
+    // 5. GESTIÓN DE INSCRIPCIONES (StudentCourse CRUD)
+    // =========================================================================
+    async function openEnrollModal(studentId) {
+        currentStudentObj = studentsData.find(s => s.id === studentId);
+        if (!currentStudentObj) return;
+
+        document.getElementById('enrollStudentId').value = studentId;
+        document.getElementById('enrollStudentName').textContent = currentStudentObj.full_name || `${currentStudentObj.first_name} ${currentStudentObj.last_name}`;
+
+        if (allCoursesList.length === 0) {
+            await loadAllCourses();
+        }
+
+        renderEnrollmentsModal();
+        enrollModal.show();
+    }
+
+    function renderEnrollmentsModal() {
+        const enrolled = currentStudentObj.enrolled_courses || [];
+        const enrolledCourseIds = enrolled.map(e => e.course);
+
+        // Opciones del select (cursos en los que aún NO está inscrito)
+        const availableCourses = allCoursesList.filter(c => !enrolledCourseIds.includes(c.id));
+        const selectEl = document.getElementById('enrollCourseSelect');
+        
+        if (availableCourses.length === 0) {
+            selectEl.innerHTML = '<option value="" disabled selected>El estudiante ya está inscrito en todos los cursos</option>';
+        } else {
+            selectEl.innerHTML = '<option value="" disabled selected>Selecciona un curso disponible...</option>' +
+                availableCourses.map(c => `<option value="${c.id}">${c.name} (Prof. ${c.teacher_name || 'Sin asignar'})</option>`).join('');
+        }
+
+        // Tabla de inscripciones actuales
+        const tbody = document.getElementById('currentEnrollmentsBody');
+        tbody.innerHTML = '';
+
+        if (enrolled.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center py-3 text-muted">
+                        No tiene cursos inscritos actualmente.
+                    </td>
+                </tr>
+            `;
+        } else {
+            enrolled.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-medium">${item.course_name || 'Curso #' + item.course}</td>
+                    <td class="text-secondary small">${item.teacher_name || 'Sin docente'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteEnrollment(${item.id})" title="Desinscribir curso">
+                            <i class="bi bi-x-lg"></i> Quitar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    // Inscribir curso (POST /api/student-courses/)
+    document.getElementById('addEnrollmentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const studentId = parseInt(document.getElementById('enrollStudentId').value);
+        const courseId = parseInt(document.getElementById('enrollCourseSelect').value);
+
+        if (!courseId) {
+            showToast('Por favor selecciona una asignatura', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/student-courses/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({ student: studentId, course: courseId })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(JSON.stringify(err));
+            }
+
+            showToast('Inscripción realizada con éxito', 'success');
+            await refreshStudentData(studentId);
+
+        } catch (error) {
+            console.error('Error al inscribir:', error);
+            showToast(`Error: ${error.message}`, 'danger');
+        }
+    });
+
+    // Eliminar inscripción (DELETE /api/student-courses/{id}/)
+    async function deleteEnrollment(enrollmentId) {
+        const studentId = parseInt(document.getElementById('enrollStudentId').value);
+
+        try {
+            const response = await fetch(`/api/student-courses/${enrollmentId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                }
+            });
+
+            if (!response.ok && response.status !== 204) throw new Error(`HTTP Error ${response.status}`);
+
+            showToast('Inscripción eliminada', 'info');
+            await refreshStudentData(studentId);
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al eliminar inscripción: ${error.message}`, 'danger');
+        }
+    }
+
+    async function refreshStudentData(studentId) {
+        await fetchStudents();
+        currentStudentObj = studentsData.find(s => s.id === studentId);
+        if (currentStudentObj) {
+            renderEnrollmentsModal();
+        }
+    }
+
+    // Filtrado en vivo
     filterInput.addEventListener('input', function(e) {
         const query = e.target.value.toLowerCase().trim();
         const filtered = studentsData.filter(student => {
@@ -208,7 +626,6 @@
             const lastName = (student.last_name || '').toLowerCase();
             const fullName = (student.full_name || '').toLowerCase();
             
-            // Buscar también en nombres de cursos inscritos
             let matchCourse = false;
             if (student.enrolled_courses) {
                 matchCourse = student.enrolled_courses.some(c => (c.course_name || '').toLowerCase().includes(query));
@@ -219,14 +636,14 @@
         renderTable(filtered);
     });
 
-    // Botón de recarga
     btnReload.addEventListener('click', () => {
         fetchStudents();
+        loadAllCourses();
     });
 
-    // Ejecución al cargar DOM
     document.addEventListener('DOMContentLoaded', () => {
         fetchStudents();
+        loadAllCourses();
     });
 </script>
 {% endblock %}

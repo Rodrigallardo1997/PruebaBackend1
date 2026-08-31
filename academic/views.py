@@ -70,7 +70,7 @@ def courses_view(request):
 
 def students_view(request):
     """
-    Vista frontend para el listado de Estudiantes.
+    Vista frontend para el listado y gestión CRUD de Estudiantes.
     Renderiza la plantilla HTML 'students.html', la cual consume asíncronamente
     los datos desde '/api/students/' mediante JavaScript fetch().
     """
@@ -79,6 +79,19 @@ def students_view(request):
         'active_tab': 'students'
     }
     return render(request, 'academic/students.html', context)
+
+
+def teachers_view(request):
+    """
+    Vista frontend para el listado y gestión CRUD de Docentes.
+    Renderiza la plantilla HTML 'teachers.html', la cual consume asíncronamente
+    los datos desde '/api/teachers/' mediante JavaScript fetch().
+    """
+    context = {
+        'page_title': 'Gestión de Docentes y Profesores',
+        'active_tab': 'teachers'
+    }
+    return render(request, 'academic/teachers.html', context)
 
 
 # ==============================================================================

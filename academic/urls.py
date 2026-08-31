@@ -21,6 +21,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     index_view,
+    teachers_view,
     courses_view,
     students_view,
     TeacherViewSet,
@@ -39,6 +40,7 @@ router.register(r'student-courses', StudentCourseViewSet, basename='student-cour
 urlpatterns = [
     # Rutas Frontend (Vistas HTML)
     path('', index_view, name='home'),
+    path('teachers/', teachers_view, name='teachers'),
     path('courses/', courses_view, name='courses'),
     path('students/', students_view, name='students'),
 

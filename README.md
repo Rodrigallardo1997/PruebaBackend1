@@ -99,20 +99,21 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 
 ## 🌐 Mapeo de Rutas y Endpoints
 
-### Vistas Web (Frontend Enmascarado):
-| Ruta | Descripción | Endpoint que consume internamente |
+### Vistas Web (Frontend Enmascarado con CRUD Completo):
+| Ruta | Descripción | Operaciones Soportadas |
 | :--- | :--- | :--- |
-| `http://127.0.0.1:8000/` | **Inicio / Dashboard**: Resuelve la raíz y elimina el error 404. | N/A |
-| `http://127.0.0.1:8000/courses/` | **Cursos**: Listado de asignaturas y docente asignado. | `GET /api/courses/` vía `fetch()` |
-| `http://127.0.0.1:8000/students/` | **Estudiantes**: Listado de alumnos y sus materias inscritas. | `GET /api/students/` vía `fetch()` |
+| `http://127.0.0.1:8000/` | **Inicio / Dashboard**: Resuelve la raíz y elimina el error 404. | Lectura y accesos directos. |
+| `http://127.0.0.1:8000/teachers/` | **Docentes**: CRUD interactivo de profesores. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
+| `http://127.0.0.1:8000/courses/` | **Cursos**: CRUD interactivo de asignaturas con profesor asignado. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
+| `http://127.0.0.1:8000/students/` | **Estudiantes**: CRUD de alumnos y gestión de inscripciones de materias. | **Crear**, **Listar**, **Editar**, **Eliminar**, **Inscribir/Desinscribir**. |
 
 ### Endpoints REST API (Django REST Framework):
-| Endpoint | Método | Descripción |
+| Endpoint | Métodos HTTP | Descripción |
 | :--- | :--- | :--- |
-| `http://127.0.0.1:8000/api/courses/` | `GET`, `POST` | Listado y creación de asignaturas (incluye profesor). |
-| `http://127.0.0.1:8000/api/students/` | `GET`, `POST` | Listado y creación de alumnos (incluye inscripciones). |
-| `http://127.0.0.1:8000/api/teachers/` | `GET`, `POST` | Listado y creación de docentes. |
-| `http://127.0.0.1:8000/api/student-courses/` | `GET`, `POST` | Listado de relaciones de inscripción. |
+| `http://127.0.0.1:8000/api/teachers/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Docentes. |
+| `http://127.0.0.1:8000/api/courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Asignaturas. |
+| `http://127.0.0.1:8000/api/students/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Estudiantes. |
+| `http://127.0.0.1:8000/api/student-courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD para Inscripciones de Estudiantes a Cursos. |
 | `http://127.0.0.1:8000/admin/` | `GET`, `POST` | Panel de Administración de Django. |
 
 ---

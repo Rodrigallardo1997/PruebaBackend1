@@ -1,33 +1,38 @@
 {% extends "academic/base.html" %}
 
-{% block title %}Listado de Cursos y Profesores - Gestión Académica{% endblock %}
+{% block title %}Gestión de Asignaturas y Cursos - CRUD{% endblock %}
 
 {% block content %}
 <!--
-    Plantilla: courses.html
+    Plantilla: courses.html (CRUD Cursos)
     Evaluación N°1: Desarrollo Backend con Django & DRF
     Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
     
-    Esta plantilla implementa el enmascaramiento del endpoint REST /api/courses/.
-    El navegador carga la estructura HTML y mediante JavaScript asíncrono (fetch)
-    obtiene los datos en formato JSON en segundo plano para renderizar la tabla dinámicamente.
+    Implementa operaciones completas de CRUD para la entidad Course mediante fetch():
+    - CREATE: POST /api/courses/
+    - READ:   GET /api/courses/
+    - UPDATE: PUT /api/courses/{id}/
+    - DELETE: DELETE /api/courses/{id}/
 -->
 
 <div class="row mb-4">
-    <div class="col-md-8">
+    <div class="col-md-7">
         <h2 class="h3 fw-bold text-dark mb-1">
             <i class="bi bi-book-half text-primary me-2"></i>Asignaturas y Cursos
         </h2>
         <p class="text-muted mb-0">
-            Listado de cursos registrados en la plataforma y sus docentes asignados según el modelo relacional.
+            Administración completa (Crear, Listar, Editar, Eliminar) de cursos y asignación de profesores.
         </p>
     </div>
-    <div class="col-md-4 text-md-end align-self-center mt-3 mt-md-0">
-        <button id="btnReload" class="btn btn-outline-primary btn-sm rounded-pill shadow-sm px-3">
-            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Datos
+    <div class="col-md-5 text-md-end align-self-center mt-3 mt-md-0 d-flex justify-content-md-end gap-2 flex-wrap">
+        <button class="btn btn-primary btn-sm rounded-pill shadow-sm px-3" onclick="openCreateCourseModal()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Asignatura
         </button>
-        <a href="/api/courses/" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3 ms-1">
-            <i class="bi bi-box-arrow-up-right me-1"></i> Ver JSON API
+        <button id="btnReload" class="btn btn-outline-secondary btn-sm rounded-pill shadow-sm px-3">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+        </button>
+        <a href="/api/courses/" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3">
+            <i class="bi bi-box-arrow-up-right me-1"></i> JSON API
         </a>
     </div>
 </div>
@@ -38,14 +43,14 @@
         <span class="fw-semibold text-secondary">
             <i class="bi bi-table me-1"></i> Registro de Asignaturas
         </span>
-        <!-- Campo de búsqueda / filtro dinámico -->
+        <!-- Filtro dinámico -->
         <div class="input-group input-group-sm" style="max-width: 300px;">
             <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
             <input type="text" id="filterInput" class="form-control border-start-0" placeholder="Filtrar por curso o profesor...">
         </div>
     </div>
     <div class="card-body p-0">
-        <!-- Contenedor del Spinner de Carga -->
+        <!-- Spinner de Carga -->
         <div id="loadingState" class="spinner-container py-5 text-center">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
@@ -53,13 +58,13 @@
             <p class="mt-3 mb-0 text-secondary fw-medium">Consultando endpoint asíncrono <code>/api/courses/</code>...</p>
         </div>
 
-        <!-- Mensaje de Error si la petición falla -->
+        <!-- Alerta de Error -->
         <div id="errorState" class="alert alert-danger m-4 d-none" role="alert">
             <div class="d-flex align-items-center">
                 <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
                 <div>
                     <h6 class="alert-heading mb-1">Error al consultar el endpoint</h6>
-                    <p class="mb-0 small" id="errorMessage">No se pudo obtener la respuesta desde el servidor.</p>
+                    <p class="mb-0 small" id="errorMessage"></p>
                 </div>
             </div>
         </div>
@@ -72,18 +77,124 @@
                         <th scope="col" style="width: 80px;" class="text-center">ID</th>
                         <th scope="col">Nombre de la Asignatura</th>
                         <th scope="col">Profesor Asignado</th>
-                        <th scope="col" class="text-center" style="width: 150px;">Estado</th>
+                        <th scope="col" class="text-center" style="width: 140px;">Estado</th>
+                        <th scope="col" class="text-center" style="width: 160px;">Acciones (CRUD)</th>
                     </tr>
                 </thead>
                 <tbody id="coursesTableBody">
-                    <!-- Filas insertadas dinámicamente con JavaScript fetch() -->
+                    <!-- Contenido dinámico -->
                 </tbody>
             </table>
         </div>
     </div>
     <div class="card-footer bg-white text-muted py-2 small d-flex justify-content-between">
         <span id="recordCount">Cargando registros...</span>
-        <span><i class="bi bi-shield-check text-success me-1"></i>Endpoint DRF activo</span>
+        <span><i class="bi bi-shield-check text-success me-1"></i>Endpoint /api/courses/ activo</span>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: CREAR ASIGNATURA (POST /api/courses/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="createCourseModal" tabindex="-1" aria-labelledby="createCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fs-6 fw-bold" id="createCourseModalLabel">
+                    <i class="bi bi-journal-plus me-2"></i>Registrar Nueva Asignatura
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createCourseForm">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="createCourseName" class="form-label fw-semibold">Nombre de la Asignatura <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="createCourseName" required placeholder="Ej: Arquitectura Cloud">
+                    </div>
+                    <div class="mb-3">
+                        <label for="createCourseTeacher" class="form-label fw-semibold">Docente Asignado <span class="text-danger">*</span></label>
+                        <select class="form-select" id="createCourseTeacher" required>
+                            <option value="" disabled selected>Selecciona un docente...</option>
+                        </select>
+                        <div class="form-text small">Los docentes se cargan dinámicamente desde <code>/api/teachers/</code>.</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary px-3" id="btnSubmitCreateCourse">
+                        <i class="bi bi-check-circle me-1"></i> Guardar Asignatura
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: EDITAR ASIGNATURA (PUT /api/courses/{id}/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fs-6 fw-bold" id="editCourseModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Editar Asignatura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCourseForm">
+                <input type="hidden" id="editCourseId">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="editCourseName" class="form-label fw-semibold">Nombre de la Asignatura <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editCourseName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCourseTeacher" class="form-label fw-semibold">Docente Asignado <span class="text-danger">*</span></label>
+                        <select class="form-select" id="editCourseTeacher" required>
+                            <option value="" disabled>Selecciona un docente...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-warning px-3" id="btnSubmitEditCourse">
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- MODAL: CONFIRMAR ELIMINAR ASIGNATURA (DELETE /api/courses/{id}/) -->
+<!-- ============================================================================== -->
+<div class="modal fade" id="deleteCourseModal" tabindex="-1" aria-labelledby="deleteCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fs-6 fw-bold" id="deleteCourseModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar Asignatura
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <input type="hidden" id="deleteCourseId">
+                <i class="bi bi-trash3 text-danger display-4 d-block mb-3"></i>
+                <h6 class="fw-bold mb-2">¿Estás seguro de que deseas eliminar esta asignatura?</h6>
+                <p class="text-muted small mb-0" id="deleteCourseName"></p>
+                <div class="alert alert-warning py-2 mt-3 small text-start">
+                    <i class="bi bi-info-circle me-1"></i> Las inscripciones de estudiantes a esta asignatura también serán eliminadas.
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-sm btn-danger px-3" id="btnConfirmDeleteCourse">
+                    <i class="bi bi-trash-fill me-1"></i> Sí, Eliminar
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -91,19 +202,14 @@
 {% block extra_js %}
 <script>
     /**
-     * Script Asíncrono para Consumo de API REST (/api/courses/)
+     * Lógica Asíncrona CRUD para Cursos (/api/courses/)
      * Estudiante: Rodrigo Gallardo
-     * 
-     * Implementa:
-     * 1. Consulta asíncrona mediante fetch() en segundo plano.
-     * 2. Transformación de respuesta JSON.
-     * 3. Manipulación del DOM para renderizar dinámicamente cada fila de la tabla.
-     * 4. Filtrado en tiempo real sin recargar la página.
      */
 
     let coursesData = [];
+    let teachersList = [];
 
-    // Referencias a los elementos del DOM
+    // Referencias al DOM
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const errorMessage = document.getElementById('errorMessage');
@@ -113,36 +219,63 @@
     const filterInput = document.getElementById('filterInput');
     const btnReload = document.getElementById('btnReload');
 
-    // Función principal para consumir el endpoint /api/courses/
+    // Modales Bootstrap
+    const createModalEl = document.getElementById('createCourseModal');
+    const createModal = new bootstrap.Modal(createModalEl);
+    const editModalEl = document.getElementById('editCourseModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    const deleteModalEl = document.getElementById('deleteCourseModal');
+    const deleteModal = new bootstrap.Modal(deleteModalEl);
+
+    // =========================================================================
+    // CARGAR LISTADO DE DOCENTES PARA LOS FORMULARIOS SELECT
+    // =========================================================================
+    async function loadTeachersOptions() {
+        try {
+            const response = await fetch('/api/teachers/');
+            if (response.ok) {
+                teachersList = await response.json();
+                populateTeacherSelects();
+            }
+        } catch (e) {
+            console.error('Error al cargar docentes:', e);
+        }
+    }
+
+    function populateTeacherSelects() {
+        const createSelect = document.getElementById('createCourseTeacher');
+        const editSelect = document.getElementById('editCourseTeacher');
+
+        const optionsHtml = teachersList.map(t => 
+            `<option value="${t.id}">${t.full_name || `${t.first_name} ${t.last_name}`} (ID: #${t.id})</option>`
+        ).join('');
+
+        createSelect.innerHTML = '<option value="" disabled selected>Selecciona un docente...</option>' + optionsHtml;
+        editSelect.innerHTML = '<option value="" disabled>Selecciona un docente...</option>' + optionsHtml;
+    }
+
+    // =========================================================================
+    // 1. READ (Listar Cursos vía GET)
+    // =========================================================================
     async function fetchCourses() {
-        // Mostrar spinner de carga y ocultar estados previos
         loadingState.classList.remove('d-none');
         coursesTable.classList.add('d-none');
         errorState.classList.add('d-none');
         recordCount.textContent = 'Cargando registros...';
 
         try {
-            // Petición HTTP asíncrona GET al endpoint REST
             const response = await fetch('/api/courses/', {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
-            // Verificar si el estado de respuesta es exitoso (HTTP 200)
-            if (!response.ok) {
-                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
 
-            // Parsear datos en formato JSON
             coursesData = await response.json();
-
-            // Renderizar datos en la tabla
             renderTable(coursesData);
 
         } catch (error) {
-            console.error('Error al obtener cursos:', error);
+            console.error('Error:', error);
             loadingState.classList.add('d-none');
             errorState.classList.remove('d-none');
             errorMessage.textContent = `Detalle del error: ${error.message}`;
@@ -150,25 +283,24 @@
         }
     }
 
-    // Función para renderizar los registros en la tabla
     function renderTable(data) {
         coursesTableBody.innerHTML = '';
 
         if (!data || data.length === 0) {
             coursesTableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">
+                    <td colspan="5" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                        No se encontraron asignaturas registradas.
+                        No se encontraron asignaturas registradas. Haz clic en "Nueva Asignatura".
                     </td>
                 </tr>
             `;
         } else {
             data.forEach(course => {
-                // Obtener nombre del docente asignado desde la respuesta JSON
                 const teacherName = course.teacher_name || 
                                     (course.teacher_detail ? course.teacher_detail.full_name : null) || 
                                     'Docente no asignado';
+                const teacherId = course.teacher || (course.teacher_detail ? course.teacher_detail.id : '');
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -187,18 +319,148 @@
                             <i class="bi bi-check-circle me-1"></i>Disponible
                         </span>
                     </td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${course.id}, '${escapeHtml(course.name)}', ${teacherId})" title="Editar Asignatura">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="openDeleteModal(${course.id}, '${escapeHtml(course.name)}')" title="Eliminar Asignatura">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
                 `;
                 coursesTableBody.appendChild(tr);
             });
         }
 
-        // Ocultar spinner y mostrar tabla
         loadingState.classList.add('d-none');
         coursesTable.classList.remove('d-none');
         recordCount.textContent = `Total: ${data.length} asignatura(s) encontrada(s)`;
     }
 
-    // Filtrado en vivo de la tabla según lo que escribe el usuario
+    function escapeHtml(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // =========================================================================
+    // 2. CREATE (Crear Asignatura vía POST)
+    // =========================================================================
+    function openCreateCourseModal() {
+        if (teachersList.length === 0) {
+            loadTeachersOptions();
+        }
+        createModal.show();
+    }
+
+    document.getElementById('createCourseForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('createCourseName').value.trim();
+        const teacherId = document.getElementById('createCourseTeacher').value;
+
+        if (!name || !teacherId) {
+            showToast('Por favor completa todos los campos requeridos', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/courses/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({ name: name, teacher: parseInt(teacherId) })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+            createModal.hide();
+            document.getElementById('createCourseForm').reset();
+            showToast(`Asignatura "${name}" creada exitosamente`, 'success');
+            fetchCourses();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al crear asignatura: ${error.message}`, 'danger');
+        }
+    });
+
+    // =========================================================================
+    // 3. UPDATE (Editar Asignatura vía PUT)
+    // =========================================================================
+    function openEditModal(id, name, teacherId) {
+        document.getElementById('editCourseId').value = id;
+        document.getElementById('editCourseName').value = name;
+        if (teachersList.length === 0) {
+            loadTeachersOptions().then(() => {
+                document.getElementById('editCourseTeacher').value = teacherId;
+            });
+        } else {
+            document.getElementById('editCourseTeacher').value = teacherId;
+        }
+        editModal.show();
+    }
+
+    document.getElementById('editCourseForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editCourseId').value;
+        const name = document.getElementById('editCourseName').value.trim();
+        const teacherId = document.getElementById('editCourseTeacher').value;
+
+        try {
+            const response = await fetch(`/api/courses/${id}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({ name: name, teacher: parseInt(teacherId) })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+            editModal.hide();
+            showToast('Asignatura actualizada con éxito', 'success');
+            fetchCourses();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al actualizar: ${error.message}`, 'danger');
+        }
+    });
+
+    // =========================================================================
+    // 4. DELETE (Eliminar Asignatura vía DELETE)
+    // =========================================================================
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteCourseId').value = id;
+        document.getElementById('deleteCourseName').textContent = `Asignatura: ${name} (ID: #${id})`;
+        deleteModal.show();
+    }
+
+    document.getElementById('btnConfirmDeleteCourse').addEventListener('click', async function() {
+        const id = document.getElementById('deleteCourseId').value;
+
+        try {
+            const response = await fetch(`/api/courses/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                }
+            });
+
+            if (!response.ok && response.status !== 204) throw new Error(`HTTP Error ${response.status}`);
+
+            deleteModal.hide();
+            showToast('Asignatura eliminada con éxito', 'success');
+            fetchCourses();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(`Error al eliminar: ${error.message}`, 'danger');
+        }
+    });
+
+    // Filtrado en vivo
     filterInput.addEventListener('input', function(e) {
         const query = e.target.value.toLowerCase().trim();
         const filtered = coursesData.filter(course => {
@@ -209,14 +471,14 @@
         renderTable(filtered);
     });
 
-    // Botón de recarga manual
     btnReload.addEventListener('click', () => {
         fetchCourses();
+        loadTeachersOptions();
     });
 
-    // Ejecución inicial al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
         fetchCourses();
+        loadTeachersOptions();
     });
 </script>
 {% endblock %}

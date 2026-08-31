@@ -89,6 +89,12 @@ python manage.py runserver
 ```
 El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 
+### 🔐 Credenciales del Panel de Administración (`/admin/`):
+- **URL:** `http://127.0.0.1:8000/admin/`
+- **Usuario:** `admin`
+- **Contraseña:** `admin`
+- **Email:** `admin@academic.cl`
+
 ---
 
 ## 🌐 Mapeo de Rutas y Endpoints

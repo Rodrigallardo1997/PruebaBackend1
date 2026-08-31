@@ -118,34 +118,6 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 
 ---
 
-## 🧠 Preparación para la Interrogación (Criterio 10 - 6 Puntos)
-
-A continuación se presentan las respuestas modelo para la defensa oral del proyecto:
-
-### ❓ Pregunta 1: ¿Qué es el "enmascaramiento" de endpoints y cómo se implementó en este proyecto?
-> **Respuesta:**  
-> El "enmascaramiento" consiste en separar la capa de presentación visual (HTML/CSS) de la capa de entrega de datos (API REST JSON). En lugar de que Django renderice los datos del servidor directamente dentro de la plantilla usando variables de contexto como `{{ cursos }}`, Django únicamente entrega la estructura visual básica (`courses.html`, `students.html`). Luego, el navegador ejecuta código JavaScript con la función asíncrona `fetch('/api/courses/')` que solicita los datos JSON en segundo plano y manipula dinámicamente el DOM de la tabla. Esto desacopla el frontend del backend y permite una experiencia de usuario fluida y reactiva sin recargar la página.
-
-### ❓ Pregunta 2: ¿Cómo se estructuraron las relaciones del modelo Entidad-Relación en Django (`models.py`)?
-> **Respuesta:**  
-> Se implementaron cuatro clases que heredan de `models.Model`:
-> 1. `Teacher`: Entidad principal con `first_name` y `last_name`.
-> 2. `Course`: Posee una clave foránea `teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='courses', db_column='teacher_id')` que representa la relación 1 a Muchos ("un profesor imparte una o más asignaturas").
-> 3. `Student`: Entidad con `first_name` y `last_name`.
-> 4. `StudentCourse`: Representa la tabla intermedia de la relación Muchos a Muchos entre `Student` y `Course`. Posee claves foráneas a ambas entidades y un `unique_together = ('student', 'course')` en su clase `Meta` para evitar inscripciones duplicadas.
-
-### ❓ Pregunta 3: ¿Qué rol cumplen los Serializadores (`serializers.py`) en Django REST Framework?
-> **Respuesta:**  
-> Los serializadores actúan como traductores bidireccionales entre los tipos de datos complejos de Python (instancias de modelos Django y QuerySets) y formatos nativos como JSON, XML o diccionarios Python.  
-> En este proyecto usamos `serializers.ModelSerializer`, y agregamos campos calculados como `teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)` en `CourseSerializer` y `enrolled_courses` en `StudentSerializer` para que la respuesta JSON incluya directamente la información relacional enriquecida sin requerir múltiples consultas separadas desde el cliente.
-
-### ❓ Pregunta 4: ¿Cómo se solucionó el error 404 en la ruta raíz `"/"` y cómo funciona el fallback de datos?
-> **Respuesta:**  
-> - Para el error 404: Se definió la vista `index_view` en `academic/views.py` y se registró la ruta vacía `path('', index_view, name='home')` en `academic/urls.py`, la cual se incluye en `academic_project/urls.py` mediante `path('', include('academic.urls'))`. De esta forma, al ingresar a `http://127.0.0.1:8000/`, el servidor devuelve un panel dashboard de inicio con código de estado HTTP 200.
-> - Para el fallback: Los `ViewSets` en `views.py` verifican si existen registros en la base de datos relacional (`queryset.exists()`). Si la base de datos está vacía, retornan de forma transparente las colecciones estructuradas en memoria desde `mock_data.py`, garantizando que la API siempre responda con datos válidos ante cualquier escenario.
-
----
-
 ## 👨‍💻 Autor
 - **Estudiante:** Rodrigo Gallardo
 - **Evaluación:** Evaluación N°1 - Desarrollo Backend con Django & DRF

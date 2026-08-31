@@ -1,0 +1,232 @@
+{% extends "academic/base.html" %}
+
+{% block title %}Listado de Estudiantes - Gestión Académica{% endblock %}
+
+{% block content %}
+<!--
+    Plantilla: students.html
+    Evaluación N°1: Desarrollo Backend con Django & DRF
+    Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
+    
+    Esta plantilla implementa el enmascaramiento del endpoint REST /api/students/.
+    El frontend HTML realiza una petición asíncrona mediante fetch() para obtener
+    los alumnos matriculados y sus asignaturas inscritas, presentándolos en una tabla interactiva.
+-->
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="h3 fw-bold text-dark mb-1">
+            <i class="bi bi-people-fill text-primary me-2"></i>Estudiantes Matriculados
+        </h2>
+        <p class="text-muted mb-0">
+            Listado de alumnos matriculados y sus asignaturas inscritas según el modelo relacional (Student - StudentCourse).
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end align-self-center mt-3 mt-md-0">
+        <button id="btnReload" class="btn btn-outline-primary btn-sm rounded-pill shadow-sm px-3">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Datos
+        </button>
+        <a href="/api/students/" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3 ms-1">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Ver JSON API
+        </a>
+    </div>
+</div>
+
+<!-- TARJETA PRINCIPAL DEL LISTADO -->
+<div class="card shadow-sm">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="fw-semibold text-secondary">
+            <i class="bi bi-person-lines-fill me-1"></i> Registro de Estudiantes
+        </span>
+        <!-- Filtro en vivo -->
+        <div class="input-group input-group-sm" style="max-width: 320px;">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="filterInput" class="form-control border-start-0" placeholder="Buscar por nombre, apellido o curso...">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <!-- Spinner de Carga -->
+        <div id="loadingState" class="spinner-container py-5 text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 mb-0 text-secondary fw-medium">Consultando endpoint asíncrono <code>/api/students/</code>...</p>
+        </div>
+
+        <!-- Mensaje de Error si la petición falla -->
+        <div id="errorState" class="alert alert-danger m-4 d-none" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Error al consultar el endpoint</h6>
+                    <p class="mb-0 small" id="errorMessage">No se pudo obtener la respuesta desde el servidor.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla dinámica de Estudiantes -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 d-none" id="studentsTable">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 80px;" class="text-center">ID</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Apellido</th>
+                        <th scope="col">Nombre Completo</th>
+                        <th scope="col">Asignaturas Inscritas</th>
+                        <th scope="col" class="text-center" style="width: 130px;">Matrícula</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <!-- Filas insertadas dinámicamente con JavaScript fetch() -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white text-muted py-2 small d-flex justify-content-between">
+        <span id="recordCount">Cargando registros...</span>
+        <span><i class="bi bi-shield-check text-success me-1"></i>Endpoint DRF activo</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Script Asíncrono para Consumo de API REST (/api/students/)
+     * Estudiante: Rodrigo Gallardo
+     * 
+     * Implementa:
+     * 1. Consulta asíncrona mediante fetch() en segundo plano.
+     * 2. Transformación de respuesta JSON.
+     * 3. Manipulación del DOM para renderizar dinámicamente cada estudiante y sus cursos.
+     * 4. Filtrado en tiempo real.
+     */
+
+    let studentsData = [];
+
+    // Referencias al DOM
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const errorMessage = document.getElementById('errorMessage');
+    const studentsTable = document.getElementById('studentsTable');
+    const studentsTableBody = document.getElementById('studentsTableBody');
+    const recordCount = document.getElementById('recordCount');
+    const filterInput = document.getElementById('filterInput');
+    const btnReload = document.getElementById('btnReload');
+
+    // Función asíncrona para consultar /api/students/
+    async function fetchStudents() {
+        loadingState.classList.remove('d-none');
+        studentsTable.classList.add('d-none');
+        errorState.classList.add('d-none');
+        recordCount.textContent = 'Cargando registros...';
+
+        try {
+            const response = await fetch('/api/students/', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+            }
+
+            studentsData = await response.json();
+            renderTable(studentsData);
+
+        } catch (error) {
+            console.error('Error al obtener estudiantes:', error);
+            loadingState.classList.add('d-none');
+            errorState.classList.remove('d-none');
+            errorMessage.textContent = `Detalle del error: ${error.message}`;
+            recordCount.textContent = '0 estudiantes';
+        }
+    }
+
+    // Función para renderizar los registros en la tabla
+    function renderTable(data) {
+        studentsTableBody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            studentsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                        No se encontraron estudiantes registrados.
+                    </td>
+                </tr>
+            `;
+        } else {
+            data.forEach(student => {
+                // Renderizar badges para cada asignatura inscrita
+                let coursesBadges = '';
+                if (student.enrolled_courses && student.enrolled_courses.length > 0) {
+                    coursesBadges = student.enrolled_courses.map(item => `
+                        <span class="badge badge-academic badge-course" title="Profesor: ${item.teacher_name || 'Sin docente'}">
+                            <i class="bi bi-bookmark-fill me-1"></i>${item.course_name || 'Curso #' + item.course}
+                        </span>
+                    `).join(' ');
+                } else {
+                    coursesBadges = '<span class="text-muted small fst-italic">Sin inscripciones activas</span>';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center fw-bold text-secondary">${student.id}</td>
+                    <td class="fw-medium">${student.first_name}</td>
+                    <td class="fw-medium">${student.last_name}</td>
+                    <td>
+                        <div class="fw-semibold text-dark">
+                            <i class="bi bi-person-circle text-primary me-1"></i>
+                            ${student.full_name || `${student.first_name} ${student.last_name}`}
+                        </div>
+                    </td>
+                    <td>${coursesBadges}</td>
+                    <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </span>
+                    </td>
+                `;
+                studentsTableBody.appendChild(tr);
+            });
+        }
+
+        loadingState.classList.add('d-none');
+        studentsTable.classList.remove('d-none');
+        recordCount.textContent = `Total: ${data.length} estudiante(s) registrado(s)`;
+    }
+
+    // Filtrado en vivo de la tabla
+    filterInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase().trim();
+        const filtered = studentsData.filter(student => {
+            const firstName = (student.first_name || '').toLowerCase();
+            const lastName = (student.last_name || '').toLowerCase();
+            const fullName = (student.full_name || '').toLowerCase();
+            
+            // Buscar también en nombres de cursos inscritos
+            let matchCourse = false;
+            if (student.enrolled_courses) {
+                matchCourse = student.enrolled_courses.some(c => (c.course_name || '').toLowerCase().includes(query));
+            }
+
+            return firstName.includes(query) || lastName.includes(query) || fullName.includes(query) || matchCourse;
+        });
+        renderTable(filtered);
+    });
+
+    // Botón de recarga
+    btnReload.addEventListener('click', () => {
+        fetchStudents();
+    });
+
+    // Ejecución al cargar DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchStudents();
+    });
+</script>
+{% endblock %}

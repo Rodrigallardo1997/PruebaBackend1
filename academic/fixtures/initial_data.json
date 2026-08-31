@@ -1,0 +1,194 @@
+[
+  {
+    "model": "academic.teacher",
+    "pk": 1,
+    "fields": {
+      "first_name": "Marcelo",
+      "last_name": "Alvarado"
+    }
+  },
+  {
+    "model": "academic.teacher",
+    "pk": 2,
+    "fields": {
+      "first_name": "Carolina",
+      "last_name": "Herrera"
+    }
+  },
+  {
+    "model": "academic.teacher",
+    "pk": 3,
+    "fields": {
+      "first_name": "Gonzalo",
+      "last_name": "Valenzuela"
+    }
+  },
+  {
+    "model": "academic.teacher",
+    "pk": 4,
+    "fields": {
+      "first_name": "Patricia",
+      "last_name": "Sandoval"
+    }
+  },
+  {
+    "model": "academic.course",
+    "pk": 1,
+    "fields": {
+      "name": "Desarrollo Backend con Python y Django",
+      "teacher": 1
+    }
+  },
+  {
+    "model": "academic.course",
+    "pk": 2,
+    "fields": {
+      "name": "Arquitectura de Software y APIs REST",
+      "teacher": 1
+    }
+  },
+  {
+    "model": "academic.course",
+    "pk": 3,
+    "fields": {
+      "name": "Bases de Datos Relacionales y NoSQL",
+      "teacher": 2
+    }
+  },
+  {
+    "model": "academic.course",
+    "pk": 4,
+    "fields": {
+      "name": "Desarrollo Frontend con JavaScript y React",
+      "teacher": 3
+    }
+  },
+  {
+    "model": "academic.course",
+    "pk": 5,
+    "fields": {
+      "name": "Seguridad y DevOps en la Nube",
+      "teacher": 4
+    }
+  },
+  {
+    "model": "academic.student",
+    "pk": 1,
+    "fields": {
+      "first_name": "Rodrigo",
+      "last_name": "Gallardo"
+    }
+  },
+  {
+    "model": "academic.student",
+    "pk": 2,
+    "fields": {
+      "first_name": "Valentina",
+      "last_name": "Morales"
+    }
+  },
+  {
+    "model": "academic.student",
+    "pk": 3,
+    "fields": {
+      "first_name": "Ignacio",
+      "last_name": "Castillo"
+    }
+  },
+  {
+    "model": "academic.student",
+    "pk": 4,
+    "fields": {
+      "first_name": "Camila",
+      "last_name": "Rojas"
+    }
+  },
+  {
+    "model": "academic.student",
+    "pk": 5,
+    "fields": {
+      "first_name": "Sebastian",
+      "last_name": "Perez"
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 1,
+    "fields": {
+      "student": 1,
+      "course": 1
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 2,
+    "fields": {
+      "student": 1,
+      "course": 2
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 3,
+    "fields": {
+      "student": 2,
+      "course": 1
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 4,
+    "fields": {
+      "student": 2,
+      "course": 3
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 5,
+    "fields": {
+      "student": 3,
+      "course": 2
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 6,
+    "fields": {
+      "student": 3,
+      "course": 4
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 7,
+    "fields": {
+      "student": 4,
+      "course": 3
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 8,
+    "fields": {
+      "student": 4,
+      "course": 5
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 9,
+    "fields": {
+      "student": 5,
+      "course": 1
+    }
+  },
+  {
+    "model": "academic.studentcourse",
+    "pk": 10,
+    "fields": {
+      "student": 5,
+      "course": 5
+    }
+  }
+]

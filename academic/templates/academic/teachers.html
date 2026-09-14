@@ -76,6 +76,7 @@
                         <th scope="col" style="width: 80px;" class="text-center">ID</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Apellido</th>
+                        <th scope="col" style="width: 170px;">Grado Académico</th>
                         <th scope="col">Nombre Completo</th>
                         <th scope="col" class="text-center" style="width: 170px;">Acciones (CRUD)</th>
                     </tr>
@@ -114,6 +115,14 @@
                         <label for="createLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="createLastName" required placeholder="Ej: Alvarado">
                     </div>
+                    <div class="mb-3">
+                        <label for="createDegree" class="form-label fw-semibold">Grado Académico (Choices) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="createDegree" required>
+                            <option value="LIC">Licenciado(a)</option>
+                            <option value="MAG" selected>Magíster</option>
+                            <option value="DOC">Doctor(a) / Ph.D.</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light py-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -148,6 +157,14 @@
                     <div class="mb-3">
                         <label for="editLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="editLastName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDegree" class="form-label fw-semibold">Grado Académico (Choices) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="editDegree" required>
+                            <option value="LIC">Licenciado(a)</option>
+                            <option value="MAG">Magíster</option>
+                            <option value="DOC">Doctor(a) / Ph.D.</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-2">
@@ -263,18 +280,26 @@
             `;
         } else {
             data.forEach(teacher => {
+                const degreeDisplay = teacher.degree_display || (teacher.degree === 'DOC' ? 'Doctor(a) / Ph.D.' : (teacher.degree === 'LIC' ? 'Licenciado(a)' : 'Magíster'));
+                const degreeBadge = teacher.degree === 'DOC' ? 'bg-danger-subtle text-danger border-danger-subtle' : (teacher.degree === 'LIC' ? 'bg-info-subtle text-dark border-info-subtle' : 'bg-warning-subtle text-dark border-warning-subtle');
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="text-center fw-bold text-secondary">${teacher.id}</td>
                     <td class="fw-medium">${teacher.first_name}</td>
                     <td class="fw-medium">${teacher.last_name}</td>
                     <td>
+                        <span class="badge ${degreeBadge} border px-2 py-1">
+                            <i class="bi bi-mortarboard-fill me-1"></i>${degreeDisplay}
+                        </span>
+                    </td>
+                    <td>
                         <span class="badge badge-academic badge-teacher">
                             <i class="bi bi-person-check-fill me-1"></i>${teacher.full_name || `${teacher.first_name} ${teacher.last_name}`}
                         </span>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${teacher.id}, '${teacher.first_name}', '${teacher.last_name}')" title="Editar Docente">
+                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${teacher.id}, '${teacher.first_name}', '${teacher.last_name}', '${teacher.degree || 'MAG'}')" title="Editar Docente">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
                         <button class="btn btn-outline-danger btn-sm" onclick="openDeleteModal(${teacher.id}, '${teacher.first_name} ${teacher.last_name}')" title="Eliminar Docente">
@@ -298,6 +323,7 @@
         e.preventDefault();
         const firstName = document.getElementById('createFirstName').value.trim();
         const lastName = document.getElementById('createLastName').value.trim();
+        const degree = document.getElementById('createDegree').value;
 
         if (!firstName || !lastName) {
             showToast('Por favor completa todos los campos requeridos', 'warning');
@@ -311,7 +337,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+                body: JSON.stringify({ first_name: firstName, last_name: lastName, degree: degree })
             });
 
             if (!response.ok) {
@@ -333,10 +359,11 @@
     // =========================================================================
     // 3. UPDATE (Editar Docente vía PUT)
     // =========================================================================
-    function openEditModal(id, firstName, lastName) {
+    function openEditModal(id, firstName, lastName, degree) {
         document.getElementById('editTeacherId').value = id;
         document.getElementById('editFirstName').value = firstName;
         document.getElementById('editLastName').value = lastName;
+        document.getElementById('editDegree').value = degree || 'MAG';
         editModal.show();
     }
 
@@ -345,6 +372,7 @@
         const id = document.getElementById('editTeacherId').value;
         const firstName = document.getElementById('editFirstName').value.trim();
         const lastName = document.getElementById('editLastName').value.trim();
+        const degree = document.getElementById('editDegree').value;
 
         try {
             const response = await fetch(`/api/teachers/${id}/`, {
@@ -353,7 +381,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+                body: JSON.stringify({ first_name: firstName, last_name: lastName, degree: degree })
             });
 
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);

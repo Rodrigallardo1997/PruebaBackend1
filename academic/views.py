@@ -163,14 +163,14 @@ class TeacherViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Teacher.
     Proporciona operaciones CRUD estándar sobre /api/teachers/.
-    Soporta filtros por first_name, last_name y búsqueda textual.
+    Soporta filtros por first_name, last_name, degree (Choices) y búsqueda textual.
     """
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['first_name', 'last_name']
+    filterset_fields = ['first_name', 'last_name', 'degree']
     search_fields = ['first_name', 'last_name']
-    ordering_fields = ['id', 'first_name', 'last_name']
+    ordering_fields = ['id', 'first_name', 'last_name', 'degree']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -185,14 +185,14 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Course.
     Proporciona endpoints para listar y detallar cursos en /api/courses/.
-    Soporta filtros por teacher (ID), name, búsqueda por docente y ordenamiento.
+    Soporta filtros por teacher (ID), name, modality (Choices) y búsqueda.
     """
     queryset = Course.objects.select_related('teacher').all()
     serializer_class = CourseSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['teacher', 'name']
+    filterset_fields = ['teacher', 'name', 'modality']
     search_fields = ['name', 'teacher__first_name', 'teacher__last_name']
-    ordering_fields = ['id', 'name', 'teacher']
+    ordering_fields = ['id', 'name', 'modality', 'teacher']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -207,14 +207,14 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Student.
     Proporciona endpoints sobre /api/students/.
-    Soporta filtros por first_name, last_name, búsqueda y ordenamiento.
+    Soporta filtros por first_name, last_name, status (Choices), gender (Choices) y búsqueda.
     """
     queryset = Student.objects.prefetch_related('enrollments__course__teacher').all()
     serializer_class = StudentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['first_name', 'last_name']
+    filterset_fields = ['first_name', 'last_name', 'status', 'gender']
     search_fields = ['first_name', 'last_name']
-    ordering_fields = ['id', 'first_name', 'last_name']
+    ordering_fields = ['id', 'first_name', 'last_name', 'status', 'gender']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

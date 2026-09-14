@@ -18,47 +18,57 @@ from pathlib import Path
 # ==============================================================================
 
 MOCK_TEACHERS = [
-    {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "full_name": "Marcelo Alvarado"},
-    {"id": 2, "first_name": "Carolina", "last_name": "Herrera", "full_name": "Carolina Herrera"},
-    {"id": 3, "first_name": "Gonzalo", "last_name": "Valenzuela", "full_name": "Gonzalo Valenzuela"},
-    {"id": 4, "first_name": "Patricia", "last_name": "Sandoval", "full_name": "Patricia Sandoval"},
+    {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "degree": "DOC", "degree_display": "Doctor(a) / Ph.D.", "full_name": "Marcelo Alvarado"},
+    {"id": 2, "first_name": "Carolina", "last_name": "Herrera", "degree": "MAG", "degree_display": "Magíster", "full_name": "Carolina Herrera"},
+    {"id": 3, "first_name": "Gonzalo", "last_name": "Valenzuela", "degree": "MAG", "degree_display": "Magíster", "full_name": "Gonzalo Valenzuela"},
+    {"id": 4, "first_name": "Patricia", "last_name": "Sandoval", "degree": "DOC", "degree_display": "Doctor(a) / Ph.D.", "full_name": "Patricia Sandoval"},
 ]
 
 MOCK_COURSES = [
     {
         "id": 1,
         "name": "Desarrollo Backend con Python y Django",
+        "modality": "P",
+        "modality_display": "Presencial",
         "teacher": 1,
         "teacher_name": "Marcelo Alvarado",
-        "teacher_detail": {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "full_name": "Marcelo Alvarado"}
+        "teacher_detail": {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "degree": "DOC", "degree_display": "Doctor(a) / Ph.D.", "full_name": "Marcelo Alvarado"}
     },
     {
         "id": 2,
         "name": "Arquitectura de Software y APIs REST",
+        "modality": "O",
+        "modality_display": "Online / Virtual",
         "teacher": 1,
         "teacher_name": "Marcelo Alvarado",
-        "teacher_detail": {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "full_name": "Marcelo Alvarado"}
+        "teacher_detail": {"id": 1, "first_name": "Marcelo", "last_name": "Alvarado", "degree": "DOC", "degree_display": "Doctor(a) / Ph.D.", "full_name": "Marcelo Alvarado"}
     },
     {
         "id": 3,
         "name": "Bases de Datos Relacionales y NoSQL",
+        "modality": "H",
+        "modality_display": "Híbrida",
         "teacher": 2,
         "teacher_name": "Carolina Herrera",
-        "teacher_detail": {"id": 2, "first_name": "Carolina", "last_name": "Herrera", "full_name": "Carolina Herrera"}
+        "teacher_detail": {"id": 2, "first_name": "Carolina", "last_name": "Herrera", "degree": "MAG", "degree_display": "Magíster", "full_name": "Carolina Herrera"}
     },
     {
         "id": 4,
         "name": "Desarrollo Frontend con JavaScript y React",
+        "modality": "P",
+        "modality_display": "Presencial",
         "teacher": 3,
         "teacher_name": "Gonzalo Valenzuela",
-        "teacher_detail": {"id": 3, "first_name": "Gonzalo", "last_name": "Valenzuela", "full_name": "Gonzalo Valenzuela"}
+        "teacher_detail": {"id": 3, "first_name": "Gonzalo", "last_name": "Valenzuela", "degree": "MAG", "degree_display": "Magíster", "full_name": "Gonzalo Valenzuela"}
     },
     {
         "id": 5,
         "name": "Seguridad y DevOps en la Nube",
+        "modality": "O",
+        "modality_display": "Online / Virtual",
         "teacher": 4,
         "teacher_name": "Patricia Sandoval",
-        "teacher_detail": {"id": 4, "first_name": "Patricia", "last_name": "Sandoval", "full_name": "Patricia Sandoval"}
+        "teacher_detail": {"id": 4, "first_name": "Patricia", "last_name": "Sandoval", "degree": "DOC", "degree_display": "Doctor(a) / Ph.D.", "full_name": "Patricia Sandoval"}
     },
 ]
 
@@ -67,50 +77,70 @@ MOCK_STUDENTS = [
         "id": 1,
         "first_name": "Rodrigo",
         "last_name": "Gallardo",
+        "status": "ACT",
+        "status_display": "Alumno Regular",
+        "gender": "M",
+        "gender_display": "Masculino",
         "full_name": "Rodrigo Gallardo",
         "enrolled_courses": [
-            {"id": 1, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "teacher_name": "Marcelo Alvarado"},
-            {"id": 2, "course": 2, "course_name": "Arquitectura de Software y APIs REST", "teacher_name": "Marcelo Alvarado"},
+            {"id": 1, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "modality_display": "Presencial", "teacher_name": "Marcelo Alvarado"},
+            {"id": 2, "course": 2, "course_name": "Arquitectura de Software y APIs REST", "modality_display": "Online / Virtual", "teacher_name": "Marcelo Alvarado"},
         ]
     },
     {
         "id": 2,
         "first_name": "Valentina",
         "last_name": "Morales",
+        "status": "ACT",
+        "status_display": "Alumno Regular",
+        "gender": "F",
+        "gender_display": "Femenino",
         "full_name": "Valentina Morales",
         "enrolled_courses": [
-            {"id": 3, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "teacher_name": "Marcelo Alvarado"},
-            {"id": 4, "course": 3, "course_name": "Bases de Datos Relacionales y NoSQL", "teacher_name": "Carolina Herrera"},
+            {"id": 3, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "modality_display": "Presencial", "teacher_name": "Marcelo Alvarado"},
+            {"id": 4, "course": 3, "course_name": "Bases de Datos Relacionales y NoSQL", "modality_display": "Híbrida", "teacher_name": "Carolina Herrera"},
         ]
     },
     {
         "id": 3,
         "first_name": "Ignacio",
         "last_name": "Castillo",
+        "status": "ACT",
+        "status_display": "Alumno Regular",
+        "gender": "M",
+        "gender_display": "Masculino",
         "full_name": "Ignacio Castillo",
         "enrolled_courses": [
-            {"id": 5, "course": 2, "course_name": "Arquitectura de Software y APIs REST", "teacher_name": "Marcelo Alvarado"},
-            {"id": 6, "course": 4, "course_name": "Desarrollo Frontend con JavaScript y React", "teacher_name": "Gonzalo Valenzuela"},
+            {"id": 5, "course": 2, "course_name": "Arquitectura de Software y APIs REST", "modality_display": "Online / Virtual", "teacher_name": "Marcelo Alvarado"},
+            {"id": 6, "course": 4, "course_name": "Desarrollo Frontend con JavaScript y React", "modality_display": "Presencial", "teacher_name": "Gonzalo Valenzuela"},
         ]
     },
     {
         "id": 4,
         "first_name": "Camila",
         "last_name": "Rojas",
+        "status": "SUS",
+        "status_display": "Suspendido",
+        "gender": "F",
+        "gender_display": "Femenino",
         "full_name": "Camila Rojas",
         "enrolled_courses": [
-            {"id": 7, "course": 3, "course_name": "Bases de Datos Relacionales y NoSQL", "teacher_name": "Carolina Herrera"},
-            {"id": 8, "course": 5, "course_name": "Seguridad y DevOps en la Nube", "teacher_name": "Patricia Sandoval"},
+            {"id": 7, "course": 3, "course_name": "Bases de Datos Relacionales y NoSQL", "modality_display": "Híbrida", "teacher_name": "Carolina Herrera"},
+            {"id": 8, "course": 5, "course_name": "Seguridad y DevOps en la Nube", "modality_display": "Online / Virtual", "teacher_name": "Patricia Sandoval"},
         ]
     },
     {
         "id": 5,
         "first_name": "Sebastian",
         "last_name": "Perez",
+        "status": "EGR",
+        "status_display": "Egresado",
+        "gender": "M",
+        "gender_display": "Masculino",
         "full_name": "Sebastian Perez",
         "enrolled_courses": [
-            {"id": 9, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "teacher_name": "Marcelo Alvarado"},
-            {"id": 10, "course": 5, "course_name": "Seguridad y DevOps en la Nube", "teacher_name": "Patricia Sandoval"},
+            {"id": 9, "course": 1, "course_name": "Desarrollo Backend con Python y Django", "modality_display": "Presencial", "teacher_name": "Marcelo Alvarado"},
+            {"id": 10, "course": 5, "course_name": "Seguridad y DevOps en la Nube", "modality_display": "Online / Virtual", "teacher_name": "Patricia Sandoval"},
         ]
     }
 ]

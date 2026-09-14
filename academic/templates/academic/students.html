@@ -79,6 +79,8 @@
                         <th scope="col">Nombre</th>
                         <th scope="col">Apellido</th>
                         <th scope="col">Nombre Completo</th>
+                        <th scope="col" class="text-center">Estado</th>
+                        <th scope="col" class="text-center">Género</th>
                         <th scope="col">Asignaturas Inscritas</th>
                         <th scope="col" class="text-center" style="width: 200px;">Acciones (CRUD)</th>
                     </tr>
@@ -117,6 +119,24 @@
                         <label for="createStudentLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="createStudentLastName" required placeholder="Ej: Gallardo">
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="createStudentStatus" class="form-label fw-semibold">Estado Académico</label>
+                            <select class="form-select" id="createStudentStatus">
+                                <option value="ACT" selected>Alumno Regular</option>
+                                <option value="SUS">Suspendido</option>
+                                <option value="EGR">Egresado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createStudentGender" class="form-label fw-semibold">Género</label>
+                            <select class="form-select" id="createStudentGender">
+                                <option value="M" selected>Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="O">Otro</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light py-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -151,6 +171,24 @@
                     <div class="mb-3">
                         <label for="editStudentLastName" class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="editStudentLastName" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editStudentStatus" class="form-label fw-semibold">Estado Académico</label>
+                            <select class="form-select" id="editStudentStatus">
+                                <option value="ACT">Alumno Regular</option>
+                                <option value="SUS">Suspendido</option>
+                                <option value="EGR">Egresado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editStudentGender" class="form-label fw-semibold">Género</label>
+                            <select class="form-select" id="editStudentGender">
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="O">Otro</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-2">
@@ -326,7 +364,7 @@
         if (!data || data.length === 0) {
             studentsTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">
+                    <td colspan="8" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                         No se encontraron estudiantes registrados. Haz clic en "Nuevo Estudiante".
                     </td>
@@ -345,6 +383,30 @@
                     coursesBadges = '<span class="text-muted small fst-italic">Sin asignaturas</span>';
                 }
 
+                // Status Badge
+                let statusBadge = '<span class="badge bg-secondary">N/A</span>';
+                if (student.status === 'ACT') {
+                    statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Regular</span>';
+                } else if (student.status === 'SUS') {
+                    statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-pause-circle me-1"></i>Suspendido</span>';
+                } else if (student.status === 'EGR') {
+                    statusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-mortarboard me-1"></i>Egresado</span>';
+                } else if (student.status_display) {
+                    statusBadge = `<span class="badge bg-info-subtle text-info border">${student.status_display}</span>`;
+                }
+
+                // Gender Badge
+                let genderBadge = '<span class="badge bg-light text-dark border">N/A</span>';
+                if (student.gender === 'M') {
+                    genderBadge = '<span class="badge bg-light text-primary border border-primary-subtle"><i class="bi bi-gender-male me-1"></i>Masculino</span>';
+                } else if (student.gender === 'F') {
+                    genderBadge = '<span class="badge bg-light text-danger border border-danger-subtle"><i class="bi bi-gender-female me-1"></i>Femenino</span>';
+                } else if (student.gender === 'O') {
+                    genderBadge = '<span class="badge bg-light text-warning border border-warning-subtle"><i class="bi bi-gender-ambiguous me-1"></i>Otro</span>';
+                } else if (student.gender_display) {
+                    genderBadge = `<span class="badge bg-light text-dark border">${student.gender_display}</span>`;
+                }
+
                 const fullName = student.full_name || `${student.first_name} ${student.last_name}`;
 
                 const tr = document.createElement('tr');
@@ -358,12 +420,14 @@
                             ${fullName}
                         </div>
                     </td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center">${genderBadge}</td>
                     <td>${coursesBadges}</td>
                     <td class="text-center">
                         <button class="btn btn-outline-info btn-sm me-1" onclick="openEnrollModal(${student.id})" title="Gestionar Cursos">
                             <i class="bi bi-card-checklist"></i> Cursos
                         </button>
-                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${student.id}, '${escapeHtml(student.first_name)}', '${escapeHtml(student.last_name)}')" title="Editar Estudiante">
+                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${student.id}, '${escapeHtml(student.first_name)}', '${escapeHtml(student.last_name)}', '${student.status || 'ACT'}', '${student.gender || 'M'}')" title="Editar Estudiante">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
                         <button class="btn btn-outline-danger btn-sm" onclick="openDeleteModal(${student.id}, '${escapeHtml(fullName)}')" title="Eliminar Estudiante">
@@ -391,6 +455,8 @@
         e.preventDefault();
         const firstName = document.getElementById('createStudentFirstName').value.trim();
         const lastName = document.getElementById('createStudentLastName').value.trim();
+        const status = document.getElementById('createStudentStatus').value;
+        const gender = document.getElementById('createStudentGender').value;
 
         if (!firstName || !lastName) {
             showToast('Por favor completa todos los campos requeridos', 'warning');
@@ -404,7 +470,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+                body: JSON.stringify({ first_name: firstName, last_name: lastName, status: status, gender: gender })
             });
 
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
@@ -423,10 +489,12 @@
     // =========================================================================
     // 3. UPDATE (Editar Estudiante vía PUT)
     // =========================================================================
-    function openEditModal(id, firstName, lastName) {
+    function openEditModal(id, firstName, lastName, status, gender) {
         document.getElementById('editStudentId').value = id;
         document.getElementById('editStudentFirstName').value = firstName;
         document.getElementById('editStudentLastName').value = lastName;
+        document.getElementById('editStudentStatus').value = status || 'ACT';
+        document.getElementById('editStudentGender').value = gender || 'M';
         editModal.show();
     }
 
@@ -435,6 +503,8 @@
         const id = document.getElementById('editStudentId').value;
         const firstName = document.getElementById('editStudentFirstName').value.trim();
         const lastName = document.getElementById('editStudentLastName').value.trim();
+        const status = document.getElementById('editStudentStatus').value;
+        const gender = document.getElementById('editStudentGender').value;
 
         try {
             const response = await fetch(`/api/students/${id}/`, {
@@ -443,7 +513,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ first_name: firstName, last_name: lastName })
+                body: JSON.stringify({ first_name: firstName, last_name: lastName, status: status, gender: gender })
             });
 
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);

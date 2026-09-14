@@ -29,18 +29,43 @@ class AcademicModelTests(TestCase):
         self.enrollment = StudentCourse.objects.create(student=self.student, course=self.course)
 
     def test_teacher_creation(self):
-        """Verifica la creación y propiedades del docente."""
+        """Verifica la creación y propiedades del docente con choices."""
         self.assertEqual(self.teacher.full_name, "Marcelo Alvarado")
-        self.assertEqual(str(self.teacher), f"{self.teacher.id} - Marcelo Alvarado")
+        self.assertEqual(str(self.teacher), f"{self.teacher.id} - Marcelo Alvarado (Magíster)")
+        self.assertEqual(self.teacher.degree, "MAG")
+        self.assertEqual(self.teacher.get_degree_display(), "Magíster")
+
+        # Custom degree
+        doc_teacher = Teacher.objects.create(first_name="Ada", last_name="Lovelace", degree="DOC")
+        self.assertEqual(doc_teacher.degree, "DOC")
+        self.assertEqual(doc_teacher.get_degree_display(), "Doctor(a) / Ph.D.")
 
     def test_course_creation(self):
-        """Verifica la relación entre Curso y Docente (FK)."""
+        """Verifica la relación entre Curso y Docente (FK) y choices de modalidad."""
         self.assertEqual(self.course.teacher, self.teacher)
         self.assertEqual(self.course.name, "Desarrollo Backend")
+        self.assertEqual(self.course.modality, "P")
+        self.assertEqual(self.course.get_modality_display(), "Presencial")
+
+        # Custom modality
+        online_course = Course.objects.create(name="Redes", teacher=self.teacher, modality="O")
+        self.assertEqual(online_course.modality, "O")
+        self.assertEqual(online_course.get_modality_display(), "Online / Virtual")
 
     def test_student_creation(self):
-        """Verifica la creación y propiedades del estudiante."""
+        """Verifica la creación y propiedades del estudiante con choices de status y gender."""
         self.assertEqual(self.student.full_name, "Rodrigo Gallardo")
+        self.assertEqual(self.student.status, "ACT")
+        self.assertEqual(self.student.get_status_display(), "Alumno Regular")
+        self.assertEqual(self.student.gender, "M")
+        self.assertEqual(self.student.get_gender_display(), "Masculino")
+
+        # Custom status & gender
+        female_student = Student.objects.create(first_name="Maria", last_name="Perez", status="EGR", gender="F")
+        self.assertEqual(female_student.status, "EGR")
+        self.assertEqual(female_student.get_status_display(), "Egresado")
+        self.assertEqual(female_student.gender, "F")
+        self.assertEqual(female_student.get_gender_display(), "Femenino")
 
     def test_enrollment_creation(self):
         """Verifica la relación de inscripción (StudentCourse)."""
@@ -116,63 +141,81 @@ class AcademicViewAndAPITests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_api_teachers_crud(self):
-        """Prueba las operaciones CRUD completas en /api/teachers/."""
+        """Prueba las operaciones CRUD completas en /api/teachers/ con choices."""
         # CREATE
-        post_res = self.api_client.post('/api/teachers/', {'first_name': 'Gonzalo', 'last_name': 'Valenzuela'}, format='json')
+        post_res = self.api_client.post('/api/teachers/', {'first_name': 'Gonzalo', 'last_name': 'Valenzuela', 'degree': 'DOC'}, format='json')
         self.assertEqual(post_res.status_code, status.HTTP_201_CREATED)
         teacher_id = post_res.data['id']
+        self.assertEqual(post_res.data['degree'], 'DOC')
+        self.assertEqual(post_res.data['degree_display'], 'Doctor(a) / Ph.D.')
 
         # READ (DETAIL)
         get_res = self.api_client.get(f'/api/teachers/{teacher_id}/')
         self.assertEqual(get_res.status_code, status.HTTP_200_OK)
         self.assertEqual(get_res.data['first_name'], 'Gonzalo')
+        self.assertEqual(get_res.data['degree_display'], 'Doctor(a) / Ph.D.')
 
         # UPDATE
-        put_res = self.api_client.put(f'/api/teachers/{teacher_id}/', {'first_name': 'Gonzalo Andres', 'last_name': 'Valenzuela'}, format='json')
+        put_res = self.api_client.put(f'/api/teachers/{teacher_id}/', {'first_name': 'Gonzalo Andres', 'last_name': 'Valenzuela', 'degree': 'MAG'}, format='json')
         self.assertEqual(put_res.status_code, status.HTTP_200_OK)
         self.assertEqual(put_res.data['first_name'], 'Gonzalo Andres')
+        self.assertEqual(put_res.data['degree'], 'MAG')
+        self.assertEqual(put_res.data['degree_display'], 'Magíster')
 
         # DELETE
         del_res = self.api_client.delete(f'/api/teachers/{teacher_id}/')
         self.assertEqual(del_res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_api_courses_crud(self):
-        """Prueba las operaciones CRUD completas en /api/courses/."""
+        """Prueba las operaciones CRUD completas en /api/courses/ con choices."""
         # CREATE
-        post_res = self.api_client.post('/api/courses/', {'name': 'Inteligencia Artificial', 'teacher': self.teacher.id}, format='json')
+        post_res = self.api_client.post('/api/courses/', {'name': 'Inteligencia Artificial', 'teacher': self.teacher.id, 'modality': 'O'}, format='json')
         self.assertEqual(post_res.status_code, status.HTTP_201_CREATED)
         course_id = post_res.data['id']
+        self.assertEqual(post_res.data['modality'], 'O')
+        self.assertEqual(post_res.data['modality_display'], 'Online / Virtual')
 
         # READ (DETAIL)
         get_res = self.api_client.get(f'/api/courses/{course_id}/')
         self.assertEqual(get_res.status_code, status.HTTP_200_OK)
         self.assertEqual(get_res.data['teacher_name'], 'Carolina Herrera')
+        self.assertEqual(get_res.data['modality_display'], 'Online / Virtual')
 
         # UPDATE
-        put_res = self.api_client.put(f'/api/courses/{course_id}/', {'name': 'IA Avanzada', 'teacher': self.teacher.id}, format='json')
+        put_res = self.api_client.put(f'/api/courses/{course_id}/', {'name': 'IA Avanzada', 'teacher': self.teacher.id, 'modality': 'H'}, format='json')
         self.assertEqual(put_res.status_code, status.HTTP_200_OK)
         self.assertEqual(put_res.data['name'], 'IA Avanzada')
+        self.assertEqual(put_res.data['modality'], 'H')
+        self.assertEqual(put_res.data['modality_display'], 'Híbrida')
 
         # DELETE
         del_res = self.api_client.delete(f'/api/courses/{course_id}/')
         self.assertEqual(del_res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_api_students_crud(self):
-        """Prueba las operaciones CRUD completas en /api/students/."""
+        """Prueba las operaciones CRUD completas en /api/students/ con choices."""
         # CREATE
-        post_res = self.api_client.post('/api/students/', {'first_name': 'Camila', 'last_name': 'Rojas'}, format='json')
+        post_res = self.api_client.post('/api/students/', {'first_name': 'Camila', 'last_name': 'Rojas', 'status': 'ACT', 'gender': 'F'}, format='json')
         self.assertEqual(post_res.status_code, status.HTTP_201_CREATED)
         student_id = post_res.data['id']
+        self.assertEqual(post_res.data['status'], 'ACT')
+        self.assertEqual(post_res.data['status_display'], 'Alumno Regular')
+        self.assertEqual(post_res.data['gender'], 'F')
+        self.assertEqual(post_res.data['gender_display'], 'Femenino')
 
         # READ
         get_res = self.api_client.get(f'/api/students/{student_id}/')
         self.assertEqual(get_res.status_code, status.HTTP_200_OK)
         self.assertEqual(get_res.data['first_name'], 'Camila')
+        self.assertEqual(get_res.data['status_display'], 'Alumno Regular')
+        self.assertEqual(get_res.data['gender_display'], 'Femenino')
 
         # UPDATE
-        put_res = self.api_client.put(f'/api/students/{student_id}/', {'first_name': 'Camila Paz', 'last_name': 'Rojas'}, format='json')
+        put_res = self.api_client.put(f'/api/students/{student_id}/', {'first_name': 'Camila Paz', 'last_name': 'Rojas', 'status': 'EGR', 'gender': 'F'}, format='json')
         self.assertEqual(put_res.status_code, status.HTTP_200_OK)
         self.assertEqual(put_res.data['first_name'], 'Camila Paz')
+        self.assertEqual(put_res.data['status'], 'EGR')
+        self.assertEqual(put_res.data['status_display'], 'Egresado')
 
         # DELETE
         del_res = self.api_client.delete(f'/api/students/{student_id}/')
@@ -225,6 +268,22 @@ class AcademicViewAndAPITests(TestCase):
         search_res = self.api_client.get('/api/courses/?search=Bases')
         self.assertEqual(search_res.status_code, status.HTTP_200_OK)
         self.assertEqual(search_res.data[0]['name'], "Bases de Datos")
+
+    def test_choices_filtering(self):
+        """Prueba el filtrado directo en los endpoints DRF usando campos de choices."""
+        # Filtrar cursos por modalidad
+        res_course = self.api_client.get('/api/courses/?modality=P')
+        self.assertEqual(res_course.status_code, status.HTTP_200_OK)
+        self.assertTrue(all(c['modality'] == 'P' for c in res_course.data))
+
+        # Filtrar docentes por grado
+        res_teacher = self.api_client.get('/api/teachers/?degree=LIC')
+        self.assertEqual(res_teacher.status_code, status.HTTP_200_OK)
+        self.assertTrue(all(t['degree'] == 'LIC' for t in res_teacher.data))
+
+        # Filtrar estudiantes por status y gender
+        res_student = self.api_client.get('/api/students/?status=ACT&gender=M')
+        self.assertEqual(res_student.status_code, status.HTTP_200_OK)
 
     def test_demo_view_public_read_only(self):
         """Prueba que la vista de demostración /demo/ responda HTTP 200 a visitantes sin login."""

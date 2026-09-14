@@ -76,8 +76,9 @@
                     <tr>
                         <th scope="col" style="width: 80px;" class="text-center">ID</th>
                         <th scope="col">Nombre de la Asignatura</th>
+                        <th scope="col" style="width: 150px;">Modalidad</th>
                         <th scope="col">Profesor Asignado</th>
-                        <th scope="col" class="text-center" style="width: 140px;">Estado</th>
+                        <th scope="col" class="text-center" style="width: 130px;">Estado</th>
                         <th scope="col" class="text-center" style="width: 160px;">Acciones (CRUD)</th>
                     </tr>
                 </thead>
@@ -110,6 +111,14 @@
                     <div class="mb-3">
                         <label for="createCourseName" class="form-label fw-semibold">Nombre de la Asignatura <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="createCourseName" required placeholder="Ej: Arquitectura Cloud">
+                    </div>
+                    <div class="mb-3">
+                        <label for="createCourseModality" class="form-label fw-semibold">Modalidad (Choices) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="createCourseModality" required>
+                            <option value="P" selected>Presencial</option>
+                            <option value="O">Online / Virtual</option>
+                            <option value="H">Híbrida</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="createCourseTeacher" class="form-label fw-semibold">Docente Asignado <span class="text-danger">*</span></label>
@@ -148,6 +157,14 @@
                     <div class="mb-3">
                         <label for="editCourseName" class="form-label fw-semibold">Nombre de la Asignatura <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="editCourseName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCourseModality" class="form-label fw-semibold">Modalidad (Choices) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="editCourseModality" required>
+                            <option value="P">Presencial</option>
+                            <option value="O">Online / Virtual</option>
+                            <option value="H">Híbrida</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="editCourseTeacher" class="form-label fw-semibold">Docente Asignado <span class="text-danger">*</span></label>
@@ -301,6 +318,8 @@
                                     (course.teacher_detail ? course.teacher_detail.full_name : null) || 
                                     'Docente no asignado';
                 const teacherId = course.teacher || (course.teacher_detail ? course.teacher_detail.id : '');
+                const modalityDisplay = course.modality_display || (course.modality === 'O' ? 'Online / Virtual' : (course.modality === 'H' ? 'Híbrida' : 'Presencial'));
+                const modalityBadgeClass = course.modality === 'O' ? 'bg-info-subtle text-dark border-info-subtle' : (course.modality === 'H' ? 'bg-warning-subtle text-dark border-warning-subtle' : 'bg-primary-subtle text-primary border-primary-subtle');
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -308,6 +327,11 @@
                     <td>
                         <div class="fw-semibold text-dark">${course.name}</div>
                         <small class="text-muted">Código: ASIG-${String(course.id).padStart(3, '0')}</small>
+                    </td>
+                    <td>
+                        <span class="badge ${modalityBadgeClass} border px-2 py-1">
+                            <i class="bi bi-laptop me-1"></i>${modalityDisplay}
+                        </span>
                     </td>
                     <td>
                         <span class="badge badge-academic badge-teacher">
@@ -320,7 +344,7 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${course.id}, '${escapeHtml(course.name)}', ${teacherId})" title="Editar Asignatura">
+                        <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(${course.id}, '${escapeHtml(course.name)}', '${course.modality || 'P'}', ${teacherId})" title="Editar Asignatura">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
                         <button class="btn btn-outline-danger btn-sm" onclick="openDeleteModal(${course.id}, '${escapeHtml(course.name)}')" title="Eliminar Asignatura">
@@ -354,6 +378,7 @@
     document.getElementById('createCourseForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const name = document.getElementById('createCourseName').value.trim();
+        const modality = document.getElementById('createCourseModality').value;
         const teacherId = document.getElementById('createCourseTeacher').value;
 
         if (!name || !teacherId) {
@@ -368,7 +393,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ name: name, teacher: parseInt(teacherId) })
+                body: JSON.stringify({ name: name, modality: modality, teacher: parseInt(teacherId) })
             });
 
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
@@ -387,9 +412,10 @@
     // =========================================================================
     // 3. UPDATE (Editar Asignatura vía PUT)
     // =========================================================================
-    function openEditModal(id, name, teacherId) {
+    function openEditModal(id, name, modality, teacherId) {
         document.getElementById('editCourseId').value = id;
         document.getElementById('editCourseName').value = name;
+        document.getElementById('editCourseModality').value = modality || 'P';
         if (teachersList.length === 0) {
             loadTeachersOptions().then(() => {
                 document.getElementById('editCourseTeacher').value = teacherId;
@@ -404,6 +430,7 @@
         e.preventDefault();
         const id = document.getElementById('editCourseId').value;
         const name = document.getElementById('editCourseName').value.trim();
+        const modality = document.getElementById('editCourseModality').value;
         const teacherId = document.getElementById('editCourseTeacher').value;
 
         try {
@@ -413,7 +440,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
-                body: JSON.stringify({ name: name, teacher: parseInt(teacherId) })
+                body: JSON.stringify({ name: name, modality: modality, teacher: parseInt(teacherId) })
             });
 
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);

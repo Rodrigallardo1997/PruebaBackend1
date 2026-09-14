@@ -102,7 +102,8 @@
                                 <th style="width: 80px;">ID</th>
                                 <th>Nombre de la Asignatura</th>
                                 <th>Profesor a Cargo</th>
-                                <th style="width: 140px;" class="text-center">Estado</th>
+                                <th style="width: 140px;" class="text-center">Modalidad</th>
+                                <th style="width: 120px;" class="text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody id="coursesTableBody"></tbody>
@@ -126,7 +127,8 @@
                                 <th>Nombre</th>
                                 <th>Apellido</th>
                                 <th>Nombre Completo</th>
-                                <th style="width: 140px;" class="text-center">Rol</th>
+                                <th style="width: 160px;" class="text-center">Grado Académico</th>
+                                <th style="width: 100px;" class="text-center">Rol</th>
                             </tr>
                         </thead>
                         <tbody id="teachersTableBody"></tbody>
@@ -149,8 +151,9 @@
                                 <th style="width: 80px;">ID</th>
                                 <th>Nombre</th>
                                 <th>Apellido</th>
+                                <th style="width: 130px;" class="text-center">Estado</th>
+                                <th style="width: 120px;" class="text-center">Género</th>
                                 <th>Asignaturas Inscritas</th>
-                                <th style="width: 140px;" class="text-center">Matrícula</th>
                             </tr>
                         </thead>
                         <tbody id="studentsTableBody"></tbody>
@@ -226,15 +229,27 @@
         const tbody = document.getElementById('coursesTableBody');
         tbody.innerHTML = '';
         if (courses.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No hay asignaturas registradas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay asignaturas registradas.</td></tr>';
             return;
         }
         courses.forEach(c => {
+            let modalityBadge = '<span class="badge bg-secondary">N/A</span>';
+            if (c.modality === 'P') {
+                modalityBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-building me-1"></i>Presencial</span>';
+            } else if (c.modality === 'O') {
+                modalityBadge = '<span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-laptop me-1"></i>Online</span>';
+            } else if (c.modality === 'H') {
+                modalityBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-diagram-3 me-1"></i>Híbrida</span>';
+            } else if (c.modality_display) {
+                modalityBadge = `<span class="badge bg-light text-dark border">${c.modality_display}</span>`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="badge bg-secondary-subtle text-secondary">#${c.id}</span></td>
                 <td class="fw-semibold text-dark">${c.name}</td>
                 <td><span class="badge bg-primary-subtle text-primary"><i class="bi bi-person me-1"></i>${c.teacher_name || 'Sin Asignar'}</span></td>
+                <td class="text-center">${modalityBadge}</td>
                 <td class="text-center"><span class="badge bg-success-subtle text-success">Activa</span></td>
             `;
             tbody.appendChild(tr);
@@ -245,16 +260,28 @@
         const tbody = document.getElementById('teachersTableBody');
         tbody.innerHTML = '';
         if (teachers.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay docentes registrados.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No hay docentes registrados.</td></tr>';
             return;
         }
         teachers.forEach(t => {
+            let degreeBadge = '<span class="badge bg-secondary">N/A</span>';
+            if (t.degree === 'LIC') {
+                degreeBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-award me-1"></i>Licenciado(a)</span>';
+            } else if (t.degree === 'MAG') {
+                degreeBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-mortarboard-fill me-1"></i>Magíster</span>';
+            } else if (t.degree === 'DOC') {
+                degreeBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-star-fill me-1"></i>Doctor(a) / Ph.D.</span>';
+            } else if (t.degree_display) {
+                degreeBadge = `<span class="badge bg-light text-dark border">${t.degree_display}</span>`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="badge bg-secondary-subtle text-secondary">#${t.id}</span></td>
                 <td>${t.first_name}</td>
                 <td>${t.last_name}</td>
                 <td class="fw-semibold text-dark">${t.full_name || (t.first_name + ' ' + t.last_name)}</td>
+                <td class="text-center">${degreeBadge}</td>
                 <td class="text-center"><span class="badge bg-warning-subtle text-dark">Docente</span></td>
             `;
             tbody.appendChild(tr);
@@ -265,23 +292,48 @@
         const tbody = document.getElementById('studentsTableBody');
         tbody.innerHTML = '';
         if (students.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay estudiantes registrados.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No hay estudiantes registrados.</td></tr>';
             return;
         }
         students.forEach(s => {
-            const tr = document.createElement('tr');
-            let coursesHtml = '<span class="text-muted small">Sin cursos</span>';
-            if (s.enrolled_courses && s.enrolled_courses.length > 0) {
-                coursesHtml = s.enrolled_courses.map(courseName => 
-                    `<span class="badge bg-info-subtle text-dark me-1 mb-1">${courseName}</span>`
-                ).join('');
+            let statusBadge = '<span class="badge bg-secondary">N/A</span>';
+            if (s.status === 'ACT') {
+                statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Regular</span>';
+            } else if (s.status === 'SUS') {
+                statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-pause-circle me-1"></i>Suspendido</span>';
+            } else if (s.status === 'EGR') {
+                statusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-mortarboard me-1"></i>Egresado</span>';
+            } else if (s.status_display) {
+                statusBadge = `<span class="badge bg-light text-dark border">${s.status_display}</span>`;
             }
+
+            let genderBadge = '<span class="badge bg-light text-dark border">N/A</span>';
+            if (s.gender === 'M') {
+                genderBadge = '<span class="badge bg-light text-primary border border-primary-subtle"><i class="bi bi-gender-male me-1"></i>Masculino</span>';
+            } else if (s.gender === 'F') {
+                genderBadge = '<span class="badge bg-light text-danger border border-danger-subtle"><i class="bi bi-gender-female me-1"></i>Femenino</span>';
+            } else if (s.gender === 'O') {
+                genderBadge = '<span class="badge bg-light text-warning border border-warning-subtle"><i class="bi bi-gender-ambiguous me-1"></i>Otro</span>';
+            } else if (s.gender_display) {
+                genderBadge = `<span class="badge bg-light text-dark border">${s.gender_display}</span>`;
+            }
+
+            let coursesHtml = '<span class="text-muted small fst-italic">Sin asignaturas</span>';
+            if (s.enrolled_courses && s.enrolled_courses.length > 0) {
+                coursesHtml = s.enrolled_courses.map(item => {
+                    const cName = typeof item === 'object' ? (item.course_name || 'Curso #' + item.course) : item;
+                    return `<span class="badge bg-info-subtle text-dark border border-info-subtle me-1 mb-1"><i class="bi bi-bookmark-fill me-1"></i>${cName}</span>`;
+                }).join('');
+            }
+
+            const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="badge bg-secondary-subtle text-secondary">#${s.id}</span></td>
                 <td>${s.first_name}</td>
                 <td>${s.last_name}</td>
+                <td class="text-center">${statusBadge}</td>
+                <td class="text-center">${genderBadge}</td>
                 <td>${coursesHtml}</td>
-                <td class="text-center"><span class="badge bg-primary-subtle text-primary">Regular</span></td>
             `;
             tbody.appendChild(tr);
         });

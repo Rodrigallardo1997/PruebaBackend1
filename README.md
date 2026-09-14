@@ -161,6 +161,14 @@ A continuación se presentan las respuestas modelo para la defensa oral del proy
 > - Ordenamiento: `GET /api/courses/?ordering=-id`
 > El ViewSet ejecuta `self.filter_queryset(self.get_queryset())`, aplicando las cláusulas `WHERE` correspondientes en SQL de forma automática y optimizada.
 
+### ❓ Pregunta 7: ¿Qué son los `choices` en Django, cómo se almacenan en la BD y cómo se exponen en DRF y HTML?
+> **Respuesta:**  
+> Los `choices` son tuplas de dos elementos `(valor_db, etiqueta_humana)` que restringen y validan los valores permitidos para un campo a nivel de modelo y formularios de Django:
+> 1. **En la Base de Datos:** Se guarda únicamente la clave compacta (por ejemplo `'LIC'`, `'MAG'`, `'DOC'` para grado; `'P'`, `'O'`, `'H'` para modalidad; `'ACT'`, `'SUS'`, `'EGR'` para estado; `'M'`, `'F'`, `'O'` para género), optimizando espacio e integridad.
+> 2. **En Python / Django:** Django genera automáticamente el método `get_<campo>_display()`, el cual retorna la descripción legible (ej: `get_degree_display()` retorna `"Magíster"`).
+> 3. **En Django REST Framework (DRF):** En los serializadores usamos `serializers.CharField(source='get_degree_display', read_only=True)` para enviar tanto el código interno (`degree`) como la etiqueta legible (`degree_display`) en el JSON de respuesta.
+> 4. **En las Vistas y Plantillas HTML:** Los formularios modales de creación y edición utilizan elementos `<select>` con opciones fijas correspondientes a los `choices`, y las tablas dinámicas muestran *badges* visuales con colores e iconos diferenciados según el valor.
+
 ---
 
 ## 👨‍💻 Autor

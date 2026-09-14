@@ -16,30 +16,31 @@ from .models import Teacher, Course, Student, StudentCourse
 class TeacherSerializer(serializers.ModelSerializer):
     """
     Serializador para la entidad Teacher (Docente).
-    Mapea id, first_name, last_name y una propiedad calculada full_name.
+    Mapea id, first_name, last_name, degree, degree_display y full_name.
     """
     full_name = serializers.ReadOnlyField()
+    degree_display = serializers.CharField(source='get_degree_display', read_only=True)
 
     class Meta:
         model = Teacher
-        fields = ['id', 'first_name', 'last_name', 'full_name']
+        fields = ['id', 'first_name', 'last_name', 'degree', 'degree_display', 'full_name']
 
 
 class CourseSerializer(serializers.ModelSerializer):
     """
     Serializador para la entidad Course (Asignatura).
-    Mapea id, name y la clave foránea del docente.
-    Incluye campos auxiliares como 'teacher_name' y 'teacher_detail' para que el frontend
-    pueda mostrar directamente el nombre del profesor asignado.
+    Mapea id, name, modality, modality_display y la clave foránea del docente.
     """
     # Permite obtener el nombre completo del docente asignado
     teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    # Etiqueta legible de la modalidad (Choices)
+    modality_display = serializers.CharField(source='get_modality_display', read_only=True)
     # Objeto serializado completo del docente (anidado)
     teacher_detail = TeacherSerializer(source='teacher', read_only=True)
 
     class Meta:
         model = Course
-        fields = ['id', 'name', 'teacher', 'teacher_name', 'teacher_detail']
+        fields = ['id', 'name', 'modality', 'modality_display', 'teacher', 'teacher_name', 'teacher_detail']
 
 
 class StudentCourseSimpleSerializer(serializers.ModelSerializer):
@@ -47,25 +48,31 @@ class StudentCourseSimpleSerializer(serializers.ModelSerializer):
     Serializador ligero para representar inscripciones desde la perspectiva del estudiante.
     """
     course_name = serializers.CharField(source='course.name', read_only=True)
+    modality_display = serializers.CharField(source='course.get_modality_display', read_only=True)
     teacher_name = serializers.CharField(source='course.teacher.full_name', read_only=True)
 
     class Meta:
         model = StudentCourse
-        fields = ['id', 'course', 'course_name', 'teacher_name']
+        fields = ['id', 'course', 'course_name', 'modality_display', 'teacher_name']
 
 
 class StudentSerializer(serializers.ModelSerializer):
     """
     Serializador para la entidad Student (Estudiante).
-    Mapea id, first_name, last_name, full_name y la lista de cursos en los que está inscrito.
+    Mapea id, first_name, last_name, status, status_display, gender, gender_display, full_name e inscripciones.
     """
     full_name = serializers.ReadOnlyField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    gender_display = serializers.CharField(source='get_gender_display', read_only=True)
     # Lista de asignaturas inscritas por el alumno
     enrolled_courses = StudentCourseSimpleSerializer(source='enrollments', many=True, read_only=True)
 
     class Meta:
         model = Student
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'enrolled_courses']
+        fields = [
+            'id', 'first_name', 'last_name', 'status', 'status_display',
+            'gender', 'gender_display', 'full_name', 'enrolled_courses'
+        ]
 
 
 class StudentCourseSerializer(serializers.ModelSerializer):

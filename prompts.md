@@ -14,6 +14,10 @@
 3. [Prompt 3: Maquetación y Diseño de Plantillas HTML con Bootstrap 5](#prompt-3-maquetación-y-diseño-de-plantillas-html-con-bootstrap-5)
 4. [Prompt 4: Implementación de Código Asíncrono con JavaScript Fetch API](#prompt-4-implementación-de-código-asíncrono-con-javascript-fetch-api)
 5. [Prompt 5: Resolución de la Ruta Raíz '/' y Eliminación del Error 404](#prompt-5-resolución-de-la-ruta-raíz--y-eliminación-del-error-404)
+6. [Prompt 6: Integración de Filtros Avanzados, Autenticación JWT y Documentación OpenAPI](#prompt-6-integración-de-filtros-avanzados-autenticación-jwt-y-documentación-openapi)
+7. [Prompt 7: Sistema de Login, Control de Acceso y Landing Page Pública](#prompt-7-sistema-de-login-control-de-acceso-y-landing-page-pública-vista-gratuita)
+8. [Prompt 8: Vista de Demostración Básica del Sistema (Solo Lectura - Sin CRUD)](#prompt-8-vista-de-demostración-básica-del-sistema-solo-lectura---sin-crud)
+9. [Prompt 9: Implementación de Choices en Modelos, Serializadores y Vistas Frontend](#prompt-9-implementación-de-choices-en-modelos-serializadores-y-vistas-frontend)
 
 ---
 
@@ -273,3 +277,35 @@ La IA implementó:
 2. Plantilla interactiva `demo.html` con pestañas para Docentes, Cursos y Estudiantes.
 3. Consumo asíncrono con `Promise.all()` y `fetch()` hacia los endpoints `/api/teachers/`, `/api/courses/` y `/api/students/`.
 4. Tablas en modo estrictamente de solo lectura, con filtros de búsqueda instantánea y sin botones de acción CRUD.
+
+---
+
+## Prompt 9: Implementación de Choices en Modelos, Serializadores y Vistas Frontend
+
+### 📥 Prompt Enviado:
+```text
+¿Cómo agregamos choices en los modelos de Django y cómo se ven en la base de datos, en la API REST y en las plantillas HTML?
+Necesito incorporarlos en las entidades Teacher, Course y Student para que el sistema quede completo:
+1. Teacher: Grado académico (Licenciado, Magíster, Doctor).
+2. Course: Modalidad (Presencial, Online, Híbrida).
+3. Student: Estado académico (Alumno Regular, Suspendido, Egresado) y Género (Masculino, Femenino, Otro).
+4. Reflejar estos campos en las migraciones, serializadores (con get_*_display), formularios modales con <select>, insignias visuales (badges) y pruebas unitarias.
+```
+
+### 📤 Respuesta Generada por la IA:
+La IA implementó:
+1. **Modelos (`academic/models.py`)**:
+   - `Teacher.DEGREE_CHOICES = [('LIC', 'Licenciado(a)'), ('MAG', 'Magíster'), ('DOC', 'Doctor(a) / Ph.D.')]` con `degree = models.CharField(max_length=3, choices=DEGREE_CHOICES, default='MAG')`.
+   - `Course.MODALITY_CHOICES = [('P', 'Presencial'), ('O', 'Online / Virtual'), ('H', 'Híbrida')]` con `modality = models.CharField(max_length=1, choices=MODALITY_CHOICES, default='P')`.
+   - `Student.STATUS_CHOICES = [('ACT', 'Alumno Regular'), ('SUS', 'Suspendido'), ('EGR', 'Egresado')]` con `status = models.CharField(max_length=3, choices=STATUS_CHOICES, default='ACT')`.
+   - `Student.GENDER_CHOICES = [('M', 'Masculino'), ('F', 'Femenino'), ('O', 'Otro')]` con `gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='M')`.
+2. **Migración de Base de Datos**:
+   - Generación y ejecución de la migración `0002_course_modality_student_gender_student_status_and_more.py`.
+3. **Serializadores (`academic/serializers.py`)**:
+   - Inclusión de campos `degree_display`, `modality_display`, `status_display` y `gender_display` usando `serializers.CharField(source='get_<field>_display', read_only=True)`.
+4. **Plantillas Frontend (`teachers.html`, `courses.html`, `students.html`, `demo.html`)**:
+   - Elementos `<select>` en modales de creación y edición.
+   - Badges e insignias de colores personalizadas para cada estado/modalidad/grado.
+5. **Pruebas Unitarias Automatizadas (`academic/tests.py`)**:
+   - Casos de prueba para validación de choices, métodos `get_*_display()` y filtrado REST en endpoints.
+

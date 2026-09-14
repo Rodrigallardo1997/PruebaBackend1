@@ -23,7 +23,14 @@ class Teacher(models.Model):
         - id: Identificador único autoincremental (Clave Primaria).
         - first_name: Nombre del docente.
         - last_name: Apellido del docente.
+        - degree: Grado académico (Choices: Licenciado, Magíster, Doctor).
     """
+    DEGREE_CHOICES = [
+        ('LIC', 'Licenciado(a)'),
+        ('MAG', 'Magíster'),
+        ('DOC', 'Doctor(a) / Ph.D.'),
+    ]
+
     first_name = models.CharField(
         max_length=100,
         verbose_name="Nombre",
@@ -33,6 +40,13 @@ class Teacher(models.Model):
         max_length=100,
         verbose_name="Apellido",
         help_text="Apellido del docente"
+    )
+    degree = models.CharField(
+        max_length=3,
+        choices=DEGREE_CHOICES,
+        default='MAG',
+        verbose_name="Grado Académico",
+        help_text="Nivel o grado académico del docente"
     )
 
     class Meta:
@@ -47,7 +61,7 @@ class Teacher(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.id} - {self.full_name}"
+        return f"{self.id} - {self.full_name} ({self.get_degree_display()})"
 
 
 class Course(models.Model):
@@ -58,7 +72,14 @@ class Course(models.Model):
         - id: Identificador único autoincremental (Clave Primaria).
         - name: Nombre del curso / asignatura.
         - teacher: Clave foránea que referencia al Docente (teacher_id en el modelo ER).
+        - modality: Modalidad de impartición (Choices: Presencial, Online, Híbrida).
     """
+    MODALITY_CHOICES = [
+        ('P', 'Presencial'),
+        ('O', 'Online / Virtual'),
+        ('H', 'Híbrida'),
+    ]
+
     name = models.CharField(
         max_length=150,
         verbose_name="Nombre de la Asignatura",
@@ -72,6 +93,13 @@ class Course(models.Model):
         verbose_name="Docente Asignado",
         help_text="Profesor que imparte la asignatura"
     )
+    modality = models.CharField(
+        max_length=1,
+        choices=MODALITY_CHOICES,
+        default='P',
+        verbose_name="Modalidad",
+        help_text="Modalidad de impartición de la materia"
+    )
 
     class Meta:
         db_table = 'course'
@@ -80,7 +108,7 @@ class Course(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return f"{self.name} (Prof. {self.teacher.full_name if self.teacher else 'Sin asignar'})"
+        return f"{self.name} [{self.get_modality_display()}] (Prof. {self.teacher.full_name if self.teacher else 'Sin asignar'})"
 
 
 class Student(models.Model):
@@ -91,7 +119,20 @@ class Student(models.Model):
         - id: Identificador único autoincremental (Clave Primaria).
         - first_name: Nombre del estudiante.
         - last_name: Apellido del estudiante.
+        - status: Estado de matrícula (Choices: Regular, Suspendido, Egresado).
+        - gender: Género del estudiante (Choices: Masculino, Femenino, Otro).
     """
+    STATUS_CHOICES = [
+        ('ACT', 'Alumno Regular'),
+        ('SUS', 'Suspendido'),
+        ('EGR', 'Egresado'),
+    ]
+    GENDER_CHOICES = [
+        ('M', 'Masculino'),
+        ('F', 'Femenino'),
+        ('O', 'Otro'),
+    ]
+
     first_name = models.CharField(
         max_length=100,
         verbose_name="Nombre",
@@ -101,6 +142,20 @@ class Student(models.Model):
         max_length=100,
         verbose_name="Apellido",
         help_text="Apellido del estudiante"
+    )
+    status = models.CharField(
+        max_length=3,
+        choices=STATUS_CHOICES,
+        default='ACT',
+        verbose_name="Estado Académico",
+        help_text="Estado actual de la matrícula"
+    )
+    gender = models.CharField(
+        max_length=1,
+        choices=GENDER_CHOICES,
+        default='M',
+        verbose_name="Género",
+        help_text="Género del estudiante"
     )
 
     class Meta:
@@ -115,7 +170,7 @@ class Student(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.id} - {self.full_name}"
+        return f"{self.id} - {self.full_name} ({self.get_status_display()})"
 
 
 class StudentCourse(models.Model):

@@ -32,6 +32,7 @@ from .views import (
     teachers_view,
     courses_view,
     students_view,
+    custom_404_view,
     TeacherViewSet,
     CourseViewSet,
     StudentViewSet,
@@ -53,6 +54,7 @@ urlpatterns = [
     # Rutas Frontend Públicas (Sin CRUD)
     path('', index_view, name='home'),
     path('demo/', demo_view, name='demo'),
+    path('404/', custom_404_view, name='preview_404'),
 
     # Rutas Frontend Protegidas (CRUD Completo para usuarios autenticados)
     path('teachers/', teachers_view, name='teachers'),

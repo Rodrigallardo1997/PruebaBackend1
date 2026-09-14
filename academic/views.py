@@ -244,3 +244,24 @@ class StudentCourseViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         # Fallback a datos simulados en memoria
         return Response(MOCK_STUDENT_COURSES, status=status.HTTP_200_OK)
+
+
+# ==============================================================================
+# MANEJADORES DE ERRORES HTTP PERSONALIZADOS (404 / 500)
+# ==============================================================================
+
+def custom_404_view(request, exception=None):
+    """
+    Manejador para errores 404 (Página no encontrada).
+    Retorna la plantilla 404.html con código de estado HTTP 404.
+    """
+    return render(request, '404.html', status=404)
+
+
+def custom_500_view(request):
+    """
+    Manejador para errores 500 (Error interno del servidor).
+    Retorna la plantilla 500.html con código de estado HTTP 500.
+    """
+    return render(request, '500.html', status=500)
+

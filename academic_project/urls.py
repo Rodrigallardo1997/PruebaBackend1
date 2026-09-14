@@ -19,3 +19,8 @@ urlpatterns = [
     # Delegación de todas las rutas de la app académica (Frontend y API REST)
     path('', include('academic.urls')),
 ]
+
+# Manejadores de error HTTP personalizados
+handler404 = 'academic.views.custom_404_view'
+handler500 = 'academic.views.custom_500_view'
+

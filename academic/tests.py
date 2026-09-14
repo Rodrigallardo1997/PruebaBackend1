@@ -290,3 +290,10 @@ class AcademicViewAndAPITests(TestCase):
         response = self.client.get('/demo/')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'academic/demo.html')
+
+    def test_custom_404_view(self):
+        """Prueba que la plantilla personalizada 404 se renderice con código HTTP 404."""
+        response = self.client.get('/404/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+

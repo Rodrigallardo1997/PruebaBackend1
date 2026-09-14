@@ -247,15 +247,23 @@ class StudentCourseViewSet(viewsets.ModelViewSet):
 
 
 # ==============================================================================
-# MANEJADORES DE ERRORES HTTP PERSONALIZADOS (404 / 500)
+# MANEJADORES DE ERRORES Y REDIRECCIONES AUTOMÁTICAS
 # ==============================================================================
+
+def redirect_to_home(request, *args, **kwargs):
+    """
+    Redirección automática de cualquier ruta no registrada hacia la página de inicio ('/').
+    Garantiza que cualquier URL mal escrita en el navegador cargue el inicio sin mostrar errores.
+    """
+    return redirect('home')
+
 
 def custom_404_view(request, exception=None):
     """
     Manejador para errores 404 (Página no encontrada).
-    Retorna la plantilla 404.html con código de estado HTTP 404.
+    Redirige automáticamente hacia la página de inicio ('/').
     """
-    return render(request, '404.html', status=404)
+    return redirect('home')
 
 
 def custom_500_view(request):
@@ -264,4 +272,5 @@ def custom_500_view(request):
     Retorna la plantilla 500.html con código de estado HTTP 500.
     """
     return render(request, '500.html', status=500)
+
 

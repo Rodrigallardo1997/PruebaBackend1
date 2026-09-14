@@ -291,9 +291,11 @@ class AcademicViewAndAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'academic/demo.html')
 
-    def test_custom_404_view(self):
-        """Prueba que la plantilla personalizada 404 se renderice con código HTTP 404."""
-        response = self.client.get('/404/')
-        self.assertEqual(response.status_code, 404)
-        self.assertTemplateUsed(response, '404.html')
+    def test_unregistered_url_redirects_to_home(self):
+        """Verifica que cualquier URL mal escrita o no registrada redirija automáticamente a la página de inicio '/'."""
+        for bad_path in ['/asdasd', '/asdasd/', '/pagina-inexistente', '/cualquier/ruta/invalida/']:
+            response = self.client.get(bad_path)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/')
+
 

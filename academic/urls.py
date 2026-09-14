@@ -17,7 +17,7 @@ Este módulo define:
    - 'api/student-courses/': Endpoint para inscripciones.
 """
 
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -32,6 +32,7 @@ from .views import (
     teachers_view,
     courses_view,
     students_view,
+    redirect_to_home,
     custom_404_view,
     TeacherViewSet,
     CourseViewSet,
@@ -54,7 +55,6 @@ urlpatterns = [
     # Rutas Frontend Públicas (Sin CRUD)
     path('', index_view, name='home'),
     path('demo/', demo_view, name='demo'),
-    path('404/', custom_404_view, name='preview_404'),
 
     # Rutas Frontend Protegidas (CRUD Completo para usuarios autenticados)
     path('teachers/', teachers_view, name='teachers'),
@@ -67,4 +67,7 @@ urlpatterns = [
 
     # Rutas API REST (Endpoints CRUD consumidos asíncronamente)
     path('api/', include(router.urls)),
+
+    # Redirección automática de cualquier ruta no registrada hacia la página de inicio
+    re_path(r'^.*$', redirect_to_home, name='catch_all_redirect'),
 ]

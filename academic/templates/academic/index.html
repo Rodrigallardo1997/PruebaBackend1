@@ -1,157 +1,191 @@
 {% extends "academic/base.html" %}
 
-{% block title %}Inicio - Plataforma de Gestión Académica{% endblock %}
+{% block title %}Inicio - Plataforma de Gestión Académica (Demo Pública){% endblock %}
 
 {% block content %}
 <!--
     Plantilla: index.html (Ruta "/")
-    Evaluación N°1: Desarrollo Backend con Django & DRF
+    Vista Pública Gratuita / Demostración Abierta
     Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
-    
-    Esta plantilla elimina el error 404 en la ruta raíz del proyecto ("/").
-    Presenta un panel de control intuitivo con accesos directos, estadísticas del dominio
-    y documentación interactiva de la arquitectura del proyecto.
 -->
 
-<div class="row align-items-center mb-4">
+<!-- HERO PRINCIPAL DE DEMOSTRACIÓN -->
+<div class="row align-items-center mb-5">
     <div class="col-12">
-        <div class="p-4 bg-white rounded-3 shadow-sm border">
-            <h1 class="display-6 fw-bold text-dark mb-2">
+        <div class="p-4 p-md-5 bg-white rounded-4 shadow-sm border position-relative overflow-hidden">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-2 px-3 rounded-pill fw-semibold">
+                    <i class="bi bi-stars me-1"></i> Demostración Pública Gratuita
+                </span>
+                {% if request.user.is_authenticated %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 rounded-pill fw-semibold">
+                    <i class="bi bi-person-check-fill me-1"></i> Sesión Iniciada: {{ request.user.username }}
+                </span>
+                {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-2 px-3 rounded-pill fw-semibold">
+                    <i class="bi bi-eye me-1"></i> Modo Visitante / Solo Lectura
+                </span>
+                {% endif %}
+            </div>
+
+            <h1 class="display-5 fw-bold text-dark mb-3">
                 <i class="bi bi-mortarboard-fill text-primary me-2"></i>Plataforma de Gestión Académica
             </h1>
-            <p class="lead text-secondary mb-3">
-                Sistema desarrollado con Django y Django REST Framework (DRF), 
-                con frontend estilizado en Bootstrap 5 que enmascara los endpoints REST mediante consumo asíncrono vía <code>fetch()</code>.
+            <p class="lead text-secondary mb-4" style="max-width: 850px;">
+                Sistema integral desarrollado con <strong>Django 6.1</strong> y <strong>Django REST Framework (DRF)</strong>. 
+                Implementa una arquitectura desacoplada donde las interfaces visuales enmascaran los endpoints REST consumiendo datos asíncronamente vía <code>fetch()</code>, autenticación moderna con tokens <strong>JWT</strong>, filtros en tiempo real y documentación <strong>OpenAPI / Swagger</strong>.
             </p>
+
             <div class="d-flex flex-wrap gap-2">
-                <a href="{% url 'teachers' %}" class="btn btn-warning px-4 py-2 rounded-pill shadow-sm text-dark fw-medium">
-                    <i class="bi bi-person-badge me-1"></i> Docentes (CRUD)
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'teachers' %}" class="btn btn-warning px-4 py-2 rounded-pill shadow-sm text-dark fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i> Administrar Docentes
                 </a>
-                <a href="{% url 'courses' %}" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
-                    <i class="bi bi-book-half me-1"></i> Cursos (CRUD)
+                <a href="{% url 'courses' %}" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm fw-semibold">
+                    <i class="bi bi-book me-1"></i> Administrar Cursos
                 </a>
-                <a href="{% url 'students' %}" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm">
-                    <i class="bi bi-people-fill me-1"></i> Estudiantes (CRUD)
+                <a href="{% url 'students' %}" class="btn btn-success px-4 py-2 rounded-pill shadow-sm fw-semibold">
+                    <i class="bi bi-people me-1"></i> Administrar Estudiantes
                 </a>
-                <a href="/admin/" target="_blank" class="btn btn-outline-secondary px-3 py-2 rounded-pill">
-                    <i class="bi bi-shield-lock me-1"></i> Panel Admin
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión para Administrar
                 </a>
+                <a href="{% url 'api-docs' %}" class="btn btn-outline-info btn-lg px-4 py-2 rounded-pill shadow-sm fw-semibold text-dark">
+                    <i class="bi bi-file-earmark-code me-2"></i> Explorar Documentación API (Swagger)
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- TARJETAS DE ACCESO DIRECTO -->
-<div class="row g-4 mb-4">
-    <!-- Card Docentes -->
+<!-- TARJETAS DE MÓDULOS DE LA PLATAFORMA -->
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <h4 class="fw-bold text-dark mb-1">
+            <i class="bi bi-grid-fill text-primary me-2"></i>Módulos de Gestión Disponibles
+        </h4>
+        <p class="text-muted small mb-0">Explora lo que ofrece cada módulo de la plataforma:</p>
+    </div>
+
+    <!-- Módulo Docentes -->
     <div class="col-md-6 col-lg-4">
-        <div class="card h-100 p-3 hover-card">
+        <div class="card h-100 p-4 border-0 shadow-sm rounded-4 hover-card">
             <div class="d-flex align-items-center mb-3">
                 <div class="rounded-3 p-3 bg-warning-subtle text-warning me-3">
-                    <i class="bi bi-person-badge fs-3"></i>
+                    <i class="bi bi-person-badge fs-2"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0">Docentes</h6>
-                    <small class="text-muted">Modelo: Teacher</small>
+                    <h5 class="fw-bold mb-0">Docentes</h5>
+                    <small class="text-muted">Modelo: <code>Teacher</code></small>
                 </div>
             </div>
-            <p class="small text-secondary mb-3">
-                Gestión completa (Crear, Editar, Eliminar y Listar) del cuerpo de profesores.
+            <p class="text-secondary small mb-4 flex-grow-1">
+                Administración completa del cuerpo docente. Permite crear profesores, editar su información personal y visualizar asignaturas asociadas.
             </p>
-            <a href="{% url 'teachers' %}" class="btn btn-sm btn-outline-warning mt-auto">
-                Gestionar Docentes <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            <div class="pt-2 border-top d-flex align-items-center justify-content-between">
+                <span class="badge bg-light text-dark border">
+                    <i class="bi bi-shield-lock text-warning me-1"></i> Requiere Login
+                </span>
+                <a href="{% url 'teachers' %}" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-semibold">
+                    Entrar <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Card Cursos -->
+    <!-- Módulo Cursos -->
     <div class="col-md-6 col-lg-4">
-        <div class="card h-100 p-3 hover-card">
+        <div class="card h-100 p-4 border-0 shadow-sm rounded-4 hover-card">
             <div class="d-flex align-items-center mb-3">
                 <div class="rounded-3 p-3 bg-primary-subtle text-primary me-3">
-                    <i class="bi bi-book fs-3"></i>
+                    <i class="bi bi-book fs-2"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0">Asignaturas</h6>
-                    <small class="text-muted">Modelo: Course</small>
+                    <h5 class="fw-bold mb-0">Asignaturas</h5>
+                    <small class="text-muted">Modelo: <code>Course</code></small>
                 </div>
             </div>
-            <p class="small text-secondary mb-3">
-                Creación y administración de asignaturas con asignación dinámica de profesores.
+            <p class="text-secondary small mb-4 flex-grow-1">
+                Catálogo académico de cursos con asignación dinámica de docentes mediante claves foráneas y regla <code>CASCADE</code> en base de datos.
             </p>
-            <a href="{% url 'courses' %}" class="btn btn-sm btn-outline-primary mt-auto">
-                Gestionar Cursos <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            <div class="pt-2 border-top d-flex align-items-center justify-content-between">
+                <span class="badge bg-light text-dark border">
+                    <i class="bi bi-shield-lock text-primary me-1"></i> Requiere Login
+                </span>
+                <a href="{% url 'courses' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                    Entrar <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Card Estudiantes -->
+    <!-- Módulo Estudiantes -->
     <div class="col-md-6 col-lg-4">
-        <div class="card h-100 p-3 hover-card">
+        <div class="card h-100 p-4 border-0 shadow-sm rounded-4 hover-card">
             <div class="d-flex align-items-center mb-3">
                 <div class="rounded-3 p-3 bg-success-subtle text-success me-3">
-                    <i class="bi bi-people fs-3"></i>
+                    <i class="bi bi-people fs-2"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0">Estudiantes</h6>
-                    <small class="text-muted">Modelo: Student & StudentCourse</small>
+                    <h5 class="fw-bold mb-0">Estudiantes</h5>
+                    <small class="text-muted">Modelo: <code>Student</code> & <code>StudentCourse</code></small>
                 </div>
             </div>
-            <p class="small text-secondary mb-3">
-                Registro de alumnos matriculados y gestión interactiva de inscripciones de materias.
+            <p class="text-secondary small mb-4 flex-grow-1">
+                Registro de alumnos y gestión de matrículas en asignaturas mediante relación Muchos a Muchos con control de duplicados (<code>unique_together</code>).
             </p>
-            <a href="{% url 'students' %}" class="btn btn-sm btn-outline-success mt-auto">
-                Gestionar Estudiantes <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            <div class="pt-2 border-top d-flex align-items-center justify-content-between">
+                <span class="badge bg-light text-dark border">
+                    <i class="bi bi-shield-lock text-success me-1"></i> Requiere Login
+                </span>
+                <a href="{% url 'students' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold">
+                    Entrar <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- DETALLE TÉCNICO Y ARQUITECTURA -->
-<div class="card shadow-sm">
-    <div class="card-header py-3 bg-light">
-        <h6 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-diagram-3-fill text-primary me-2"></i>Esquema Entidad-Relación y Funcionamiento Asíncrono
-        </h6>
+<!-- CARACTERÍSTICAS TÉCNICAS INTEGRADAS -->
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-dark text-white p-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-cpu-fill text-info me-2"></i>Características y Arquitectura del Sistema
+            </h5>
+            <span class="badge bg-info text-dark">Backend & Frontend Integrados</span>
+        </div>
     </div>
     <div class="card-body p-4">
         <div class="row g-4">
-            <div class="col-md-6">
-                <h6 class="fw-semibold text-secondary mb-2">Entidades Implementadas:</h6>
-                <ul class="list-group list-group-flush small">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span><strong>Teacher</strong>: <code>id, first_name, last_name</code></span>
-                        <span class="badge bg-secondary">Docentes</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span><strong>Course</strong>: <code>id, name, teacher_id (FK)</code></span>
-                        <span class="badge bg-secondary">Asignaturas</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span><strong>Student</strong>: <code>id, first_name, last_name</code></span>
-                        <span class="badge bg-secondary">Estudiantes</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span><strong>StudentCourse</strong>: <code>student_id (FK), course_id (FK)</code></span>
-                        <span class="badge bg-secondary">Inscripciones</span>
-                    </li>
-                </ul>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="text-primary fs-3 mb-2"><i class="bi bi-arrow-repeat"></i></div>
+                    <h6 class="fw-bold text-dark">Enmascaramiento Fetch</h6>
+                    <p class="small text-muted mb-0">Vistas HTML que consumen endpoints JSON de forma asíncrona mediante JavaScript sin recargar.</p>
+                </div>
             </div>
-            <div class="col-md-6">
-                <h6 class="fw-semibold text-secondary mb-2">Mecanismo de "Enmascaramiento":</h6>
-                <div class="p-3 bg-light rounded-3 small">
-                    <p class="mb-2">
-                        <i class="bi bi-check2-circle text-success me-1"></i>
-                        El usuario final interactúa con las vistas amigables en <code>/courses/</code> y <code>/students/</code>.
-                    </p>
-                    <p class="mb-2">
-                        <i class="bi bi-check2-circle text-success me-1"></i>
-                        La capa cliente (JavaScript) ejecuta peticiones asíncronas con <code>fetch()</code> a los endpoints <code>/api/...</code> en segundo plano.
-                    </p>
-                    <p class="mb-0">
-                        <i class="bi bi-check2-circle text-success me-1"></i>
-                        Las tablas se actualizan reactivamente sin requerir recargar la página completa.
-                    </p>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="text-warning fs-3 mb-2"><i class="bi bi-key-fill"></i></div>
+                    <h6 class="fw-bold text-dark">Tokens JWT (SimpleJWT)</h6>
+                    <p class="small text-muted mb-0">Autenticación sin estado mediante pares de tokens (Access y Refresh) en <code>/api/token/</code>.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="text-success fs-3 mb-2"><i class="bi bi-funnel-fill"></i></div>
+                    <h6 class="fw-bold text-dark">Filtros django-filter</h6>
+                    <p class="small text-muted mb-0">Filtrado en endpoints REST por parámetros URL, búsqueda textual <code>?search=</code> y ordenamiento.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="text-info fs-3 mb-2"><i class="bi bi-file-earmark-code-fill"></i></div>
+                    <h6 class="fw-bold text-dark">OpenAPI & Swagger</h6>
+                    <p class="small text-muted mb-0">Documentación viva interactiva en <code>/docs/</code> para probar todos los métodos HTTP de la API.</p>
                 </div>
             </div>
         </div>

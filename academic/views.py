@@ -17,7 +17,9 @@ Este módulo contiene:
    - StudentCourseViewSet: Expone inscripciones (/api/student-courses/).
 """
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets, status, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -40,14 +42,57 @@ from .mock_data import (
 
 
 # ==============================================================================
+# VISTAS DE AUTENTICACIÓN Y CONTROL DE ACCESO
+# ==============================================================================
+
+def login_view(request):
+    """
+    Vista de inicio de sesión con formulario Bootstrap.
+    Permite autenticar al usuario y redirigirlo al módulo que intentaba acceder.
+    """
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    error_message = None
+    next_url = request.GET.get('next', 'home')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        next_url = request.POST.get('next', 'home')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(next_url if next_url else 'home')
+        else:
+            error_message = "Usuario o contraseña incorrectos. Por favor intenta nuevamente."
+
+    context = {
+        'page_title': 'Iniciar Sesión - Plataforma de Gestión Académica',
+        'error_message': error_message,
+        'next': next_url,
+    }
+    return render(request, 'academic/login.html', context)
+
+
+def logout_view(request):
+    """
+    Cierra la sesión del usuario actual y lo redirige a la vista pública.
+    """
+    logout(request)
+    return redirect('home')
+
+
+# ==============================================================================
 # VISTAS FRONTEND (RENDERIZADO DE PLANTILLAS HTML - "ENMASCARAMIENTO")
 # ==============================================================================
 
 def index_view(request):
     """
-    Vista principal para la ruta raíz ("/").
-    Elimina el error 404 cuando se ingresa a la raíz del servidor.
-    Renderiza un panel de bienvenida con accesos rápidos a Cursos, Estudiantes y Endpoints API.
+    Vista pública principal para la ruta raíz ("/").
+    Disponible de forma gratuita/abierta para que cualquier visitante vea la
+    arquitectura, estadísticas y qué hace la plataforma académica.
     """
     context = {
         'page_title': 'Inicio - Plataforma de Gestión Académica',
@@ -56,11 +101,11 @@ def index_view(request):
     return render(request, 'academic/index.html', context)
 
 
+@login_required(login_url='login')
 def courses_view(request):
     """
-    Vista frontend para el listado de Cursos.
-    Renderiza la plantilla HTML 'courses.html', la cual consume asíncronamente
-    los datos desde '/api/courses/' mediante JavaScript fetch().
+    Vista frontend para la gestión de Cursos (Requiere Autenticación).
+    Renderiza 'courses.html' y permite interactuar con el CRUD vía fetch().
     """
     context = {
         'page_title': 'Gestión de Asignaturas y Cursos',
@@ -69,11 +114,11 @@ def courses_view(request):
     return render(request, 'academic/courses.html', context)
 
 
+@login_required(login_url='login')
 def students_view(request):
     """
-    Vista frontend para el listado y gestión CRUD de Estudiantes.
-    Renderiza la plantilla HTML 'students.html', la cual consume asíncronamente
-    los datos desde '/api/students/' mediante JavaScript fetch().
+    Vista frontend para la gestión de Estudiantes (Requiere Autenticación).
+    Renderiza 'students.html' y permite interactuar con el CRUD vía fetch().
     """
     context = {
         'page_title': 'Gestión de Estudiantes Matriculados',
@@ -82,11 +127,11 @@ def students_view(request):
     return render(request, 'academic/students.html', context)
 
 
+@login_required(login_url='login')
 def teachers_view(request):
     """
-    Vista frontend para el listado y gestión CRUD de Docentes.
-    Renderiza la plantilla HTML 'teachers.html', la cual consume asíncronamente
-    los datos desde '/api/teachers/' mediante JavaScript fetch().
+    Vista frontend para la gestión de Docentes (Requiere Autenticación).
+    Renderiza 'teachers.html' y permite interactuar con el CRUD vía fetch().
     """
     context = {
         'page_title': 'Gestión de Docentes y Profesores',

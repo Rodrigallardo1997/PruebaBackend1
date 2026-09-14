@@ -129,9 +129,10 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                     <li class="nav-item">
                         <a class="nav-link {% if active_tab == 'home' %}active{% endif %}" href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i> Inicio
+                            <i class="bi bi-house-door me-1"></i> Inicio / Demo
                         </a>
                     </li>
+                    {% if request.user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_tab == 'teachers' %}active{% endif %}" href="{% url 'teachers' %}">
                             <i class="bi bi-person-badge me-1"></i> Docentes
@@ -147,28 +148,64 @@
                             <i class="bi bi-people me-1"></i> Estudiantes
                         </a>
                     </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'docs' %}active{% endif %}" href="{% url 'api-docs' %}">
+                            <i class="bi bi-file-earmark-code me-1"></i> Documentación API
+                        </a>
+                    </li>
                 </ul>
 
-                <!-- Enlaces directos a los endpoints REST (DRF) -->
-                <div class="dropdown">
-                    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-code-slash"></i> Endpoints API (DRF)
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><h6 class="dropdown-header text-uppercase">API REST Endpoints</h6></li>
-                        <li><a class="dropdown-item" href="/docs/" target="_blank"><i class="bi bi-file-earmark-code text-info me-2"></i><strong>/docs/</strong> (Docs CoreAPI)</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/api/teachers/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/teachers/</a></li>
-                        <li><a class="dropdown-item" href="/api/courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/courses/</a></li>
-                        <li><a class="dropdown-item" href="/api/students/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/students/</a></li>
-                        <li><a class="dropdown-item" href="/api/student-courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/student-courses/</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><h6 class="dropdown-header text-uppercase">Autenticación JWT</h6></li>
-                        <li><a class="dropdown-item" href="/api/token/" target="_blank"><i class="bi bi-key text-warning me-2"></i>/api/token/</a></li>
-                        <li><a class="dropdown-item" href="/api/token/refresh/" target="_blank"><i class="bi bi-arrow-repeat text-warning me-2"></i>/api/token/refresh/</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="bi bi-shield-lock text-success me-2"></i>Django Admin</a></li>
-                    </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Enlaces directos a los endpoints REST (DRF) -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-code-slash"></i> API & JWT
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li><h6 class="dropdown-header text-uppercase">Documentación & Esquema</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'api-docs' %}"><i class="bi bi-file-earmark-code text-info me-2"></i><strong>/docs/</strong> (Swagger UI)</a></li>
+                            <li><a class="dropdown-item" href="{% url 'openapi-schema' %}" target="_blank"><i class="bi bi-braces text-secondary me-2"></i>/openapi/ (JSON)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header text-uppercase">Endpoints REST</h6></li>
+                            <li><a class="dropdown-item" href="/api/teachers/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/teachers/</a></li>
+                            <li><a class="dropdown-item" href="/api/courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/courses/</a></li>
+                            <li><a class="dropdown-item" href="/api/students/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/students/</a></li>
+                            <li><a class="dropdown-item" href="/api/student-courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/student-courses/</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header text-uppercase">Autenticación JWT</h6></li>
+                            <li><a class="dropdown-item" href="/api/token/" target="_blank"><i class="bi bi-key text-warning me-2"></i>/api/token/</a></li>
+                            <li><a class="dropdown-item" href="/api/token/refresh/" target="_blank"><i class="bi bi-arrow-repeat text-warning me-2"></i>/api/token/refresh/</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="bi bi-shield-lock text-success me-2"></i>Django Admin</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Estado de Sesión / Autenticación -->
+                    {% if request.user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1 shadow-sm fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle text-primary"></i> {{ request.user.username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li><h6 class="dropdown-header text-uppercase">Sesión Activa</h6></li>
+                            <li><span class="dropdown-item-text text-muted small"><i class="bi bi-check2-circle text-success me-1"></i>Conectado</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <span class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-25 d-none d-md-inline-flex align-items-center py-2 px-3">
+                        <i class="bi bi-eye me-1 text-info"></i> Modo Visitante
+                    </span>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm rounded-pill shadow-sm px-3 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

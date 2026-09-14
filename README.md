@@ -99,14 +99,16 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 
 ## 🌐 Mapeo de Rutas y Endpoints
 
-### Vistas Web (Frontend Enmascarado con CRUD Completo):
-| Ruta | Descripción | Operaciones Soportadas |
-| :--- | :--- | :--- |
-| `http://127.0.0.1:8000/` | **Inicio / Dashboard**: Resuelve la raíz y elimina el error 404. | Lectura y accesos directos. |
-| `http://127.0.0.1:8000/docs/` | **Documentación Interactiva (Swagger UI)**: Catálogo visual de la API. | Pruebas interactivas de endpoints y esquemas. |
-| `http://127.0.0.1:8000/teachers/` | **Docentes**: CRUD interactivo de profesores. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
-| `http://127.0.0.1:8000/courses/` | **Cursos**: CRUD interactivo de asignaturas con profesor asignado. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
-| `http://127.0.0.1:8000/students/` | **Estudiantes**: CRUD de alumnos y gestión de inscripciones de materias. | **Crear**, **Listar**, **Editar**, **Eliminar**, **Inscribir/Desinscribir**. |
+### Vistas Web (Frontend Enmascarado y Control de Acceso):
+| Ruta | Tipo de Acceso | Descripción | Operaciones Soportadas |
+| :--- | :--- | :--- | :--- |
+| `http://127.0.0.1:8000/` | **Público / Abierto** | **Vista Gratuita (Landing & Demo)**: Explica el proyecto, arquitectura y catálogo. | Demostración y enlaces a Login/Docs. |
+| `http://127.0.0.1:8000/login/` | **Público / Abierto** | **Inicio de Sesión**: Formulario de autenticación de usuarios. | Login con redirección inteligente `?next=`. |
+| `http://127.0.0.1:8000/logout/` | **Público / Abierto** | **Cierre de Sesión**: Cierra sesión y retorna al inicio. | Logout de sesión activa. |
+| `http://127.0.0.1:8000/docs/` | **Público / Abierto** | **Documentación Swagger UI**: Pruebas interactivas de la API. | Visualización y test de endpoints REST. |
+| `http://127.0.0.1:8000/teachers/` | 🔒 **Requiere Login** | **Docentes**: CRUD interactivo de profesores. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
+| `http://127.0.0.1:8000/courses/` | 🔒 **Requiere Login** | **Cursos**: CRUD interactivo de asignaturas con profesor asignado. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
+| `http://127.0.0.1:8000/students/` | 🔒 **Requiere Login** | **Estudiantes**: CRUD de alumnos y gestión de inscripciones de materias. | **Crear**, **Listar**, **Editar**, **Eliminar**, **Inscribir/Desinscribir**. |
 
 ### Endpoints REST API (Django REST Framework):
 | Endpoint | Métodos HTTP | Descripción |

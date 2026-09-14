@@ -1,0 +1,81 @@
+{% extends "academic/base.html" %}
+
+{% block title %}Iniciar Sesión - Plataforma de Gestión Académica{% endblock %}
+
+{% block content %}
+<!--
+    Plantilla: login.html
+    Inicio de Sesión y Control de Acceso
+    Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
+-->
+
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient text-white p-4 text-center" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+                <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex p-3 mb-2">
+                    <i class="bi bi-shield-lock-fill fs-1 text-white"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Iniciar Sesión</h3>
+                <p class="mb-0 text-white-50 small">Ingresa con tus credenciales para administrar los módulos</p>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                {% if error_message %}
+                <div class="alert alert-danger d-flex align-items-center mb-4 rounded-3 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
+                    <div>{{ error_message }}</div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-person me-1 text-primary"></i> Nombre de Usuario
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" placeholder="Ingresa tu usuario" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-key me-1 text-primary"></i> Contraseña
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-3 shadow-sm fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Ingresar al Sistema
+                        </button>
+                    </div>
+                </form>
+
+                <div class="alert alert-info border-0 bg-info bg-opacity-10 rounded-3 p-3 mb-0 mt-4">
+                    <h6 class="fw-bold text-info mb-1 d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-2"></i> Credenciales de Demostración:
+                    </h6>
+                    <div class="small text-muted mt-2">
+                        <span class="d-block"><strong>Usuario:</strong> <code>admin</code></span>
+                        <span class="d-block"><strong>Contraseña:</strong> <code>admin</code></span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'home' %}" class="text-decoration-none text-secondary small">
+                        <i class="bi bi-arrow-left me-1"></i> Volver a la Vista Pública
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

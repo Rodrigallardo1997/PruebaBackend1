@@ -52,36 +52,68 @@ class AcademicViewAndAPITests(TestCase):
     """Pruebas de endpoints REST y vistas HTML."""
 
     def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         self.client = Client()
         self.api_client = APIClient()
+        self.user = User.objects.create_user(username='admin_test', password='testpassword123')
         self.teacher = Teacher.objects.create(first_name="Carolina", last_name="Herrera")
         self.course = Course.objects.create(name="Bases de Datos", teacher=self.teacher)
         self.student = Student.objects.create(first_name="Valentina", last_name="Morales")
         self.enrollment = StudentCourse.objects.create(student=self.student, course=self.course)
 
-    def test_root_url_no_404(self):
-        """Verifica que la ruta raíz '/' responda HTTP 200 (sin error 404)."""
+    def test_root_url_public_landing_no_404(self):
+        """Verifica que la vista pública raíz '/' responda HTTP 200 a visitantes sin login."""
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'academic/index.html')
 
-    def test_teachers_view_html(self):
-        """Verifica que la vista frontend /teachers/ responda HTTP 200."""
-        response = self.client.get('/teachers/')
+    def test_login_view_render_and_auth(self):
+        """Verifica la vista de login y la autenticación de usuarios."""
+        # Render formulario de login
+        response = self.client.get('/login/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'academic/teachers.html')
+        self.assertTemplateUsed(response, 'academic/login.html')
 
-    def test_courses_view_html(self):
-        """Verifica que la vista frontend /courses/ responda HTTP 200."""
-        response = self.client.get('/courses/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'academic/courses.html')
+        # Login fallido (con cliente no autenticado)
+        bad_response = self.client.post('/login/', {
+            'username': 'admin_test',
+            'password': 'wrongpassword'
+        })
+        self.assertEqual(bad_response.status_code, 200)
+        self.assertContains(bad_response, 'incorrectos')
 
-    def test_students_view_html(self):
-        """Verifica que la vista frontend /students/ responda HTTP 200."""
-        response = self.client.get('/students/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'academic/students.html')
+        # Login exitoso
+        post_response = self.client.post('/login/', {
+            'username': 'admin_test',
+            'password': 'testpassword123'
+        })
+        self.assertEqual(post_response.status_code, 302)
+
+    def test_unauthenticated_modules_redirect_to_login(self):
+        """Verifica que visitantes sin autenticar sean redirigidos al login al intentar acceder a los módulos CRUD."""
+        for path in ['/teachers/', '/courses/', '/students/']:
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 302)
+            self.assertIn('/login/', response.url)
+
+    def test_authenticated_modules_access(self):
+        """Verifica que usuarios autenticados puedan acceder a los módulos CRUD."""
+        self.client.force_login(self.user)
+        for path, template in [
+            ('/teachers/', 'academic/teachers.html'),
+            ('/courses/', 'academic/courses.html'),
+            ('/students/', 'academic/students.html')
+        ]:
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, template)
+
+    def test_logout_view(self):
+        """Verifica el cierre de sesión."""
+        self.client.force_login(self.user)
+        response = self.client.get('/logout/')
+        self.assertEqual(response.status_code, 302)
 
     def test_api_teachers_crud(self):
         """Prueba las operaciones CRUD completas en /api/teachers/."""

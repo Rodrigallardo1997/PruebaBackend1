@@ -178,3 +178,10 @@ SIMPLE_JWT = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ==============================================================================
+# CONFIGURACIÓN DE AUTENTICACIÓN Y CONTROL DE ACCESO
+# ==============================================================================
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
+

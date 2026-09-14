@@ -26,6 +26,8 @@ from rest_framework_simplejwt.views import (
 )
 
 from .views import (
+    login_view,
+    logout_view,
     index_view,
     teachers_view,
     courses_view,
@@ -52,6 +54,10 @@ openapi_schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Autenticación y Sesión de Usuarios
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+
     # Rutas Frontend (Vistas HTML)
     path('', index_view, name='home'),
     path('teachers/', teachers_view, name='teachers'),

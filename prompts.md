@@ -240,3 +240,20 @@ La IA proporcionó:
 2. Configuración del diccionario `SIMPLE_JWT` con tiempo de vida de 15 minutos para tokens de acceso y rotación de tokens de refresco.
 3. Configuración de `filterset_fields`, `search_fields` y `ordering_fields` en cada ViewSet (`TeacherViewSet`, `CourseViewSet`, `StudentViewSet`, `StudentCourseViewSet`).
 4. Generación automática del esquema OpenAPI mediante `get_schema_view` y renderizado interactivo en la plantilla `docs.html` utilizando Swagger UI.
+
+---
+
+## Prompt 7: Sistema de Login, Control de Acceso y Landing Page Pública (Vista Gratuita)
+
+### 📥 Prompt Enviado:
+```text
+Implementa un sistema de autenticación previo donde exista una vista pública gratuita/abierta que muestre qué hace la plataforma y sus características, pero para ingresar y gestionar los módulos CRUD (docentes, cursos, estudiantes) solicite iniciar sesión con la cuenta de usuario.
+```
+
+### 📤 Respuesta Generada por la IA:
+La IA implementó:
+1. Vista `login_view` con formulario Bootstrap 5 y validación con `authenticate()` y `login()`, con soporte de redirección `?next=`.
+2. Vista `logout_view` para cerrar sesión con `logout()`.
+3. Protección de las vistas CRUD (`teachers_view`, `courses_view`, `students_view`) mediante el decorador `@login_required(login_url='login')`.
+4. Rediseño de `index.html` como Landing Page pública y de demostración abierta con accesos informativos.
+5. Navbar responsivo y dinámico en `base.html` que detecta si el usuario está autenticado o en modo visitante.

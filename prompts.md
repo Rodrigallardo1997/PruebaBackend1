@@ -221,3 +221,22 @@ La IA propuso:
 1. Definir una vista `index_view(request)` en `academic/views.py` que retorne `render(request, 'academic/index.html', context)`.
 2. Mapear `path('', index_view, name='home')` en `academic/urls.py` e incluir `path('', include('academic.urls'))` en `academic_project/urls.py`.
 3. Crear `index.html` con un dashboard moderno con tarjetas de acceso directo y ficha de evaluación.
+
+---
+
+## Prompt 6: Integración de Filtros Avanzados, Autenticación JWT y Documentación OpenAPI
+
+### 📥 Prompt Enviado:
+```text
+Integra en el proyecto Django con DRF las siguientes características avanzadas del proyecto 'ej1':
+1. Autenticación con Tokens JWT usando djangorestframework-simplejwt (endpoints /api/token/ y /api/token/refresh/ con configuración de tiempos de expiración).
+2. Filtros avanzados en los ViewSets con DjangoFilterBackend, SearchFilter y OrderingFilter.
+3. Documentación interactiva de la API en /docs/ con interfaz Swagger UI y esquema OpenAPI en /openapi/.
+```
+
+### 📤 Respuesta Generada por la IA:
+La IA proporcionó:
+1. Configuración de `REST_FRAMEWORK` con `DEFAULT_FILTER_BACKENDS`, `DEFAULT_AUTHENTICATION_CLASSES` (JWT y Session) y `DEFAULT_SCHEMA_CLASS`.
+2. Configuración del diccionario `SIMPLE_JWT` con tiempo de vida de 15 minutos para tokens de acceso y rotación de tokens de refresco.
+3. Configuración de `filterset_fields`, `search_fields` y `ordering_fields` en cada ViewSet (`TeacherViewSet`, `CourseViewSet`, `StudentViewSet`, `StudentCourseViewSet`).
+4. Generación automática del esquema OpenAPI mediante `get_schema_view` y renderizado interactivo en la plantilla `docs.html` utilizando Swagger UI.

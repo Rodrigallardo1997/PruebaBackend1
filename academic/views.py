@@ -18,10 +18,11 @@ Este módulo contiene:
 """
 
 from django.shortcuts import render
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Teacher, Course, Student, StudentCourse
 from .serializers import (
@@ -94,25 +95,42 @@ def teachers_view(request):
     return render(request, 'academic/teachers.html', context)
 
 
+def docs_view(request):
+    """
+    Vista frontend para la Documentación Interactiva de la API (Swagger UI).
+    Renderiza 'docs.html' conectado con el esquema OpenAPI generado automáticamente por DRF.
+    """
+    context = {
+        'page_title': 'Documentación de la API - OpenAPI / Swagger',
+        'active_tab': 'docs'
+    }
+    return render(request, 'academic/docs.html', context)
+
+
 # ==============================================================================
 # VIEWSETS / ENDPOINTS REST CON DJANGO REST FRAMEWORK (DRF)
+# Integración con django_filters, SearchFilter y OrderingFilter (ej1)
 # ==============================================================================
 
 class TeacherViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Teacher.
     Proporciona operaciones CRUD estándar sobre /api/teachers/.
-    Si la base de datos no tiene registros, provee fallback a colecciones en memoria.
+    Soporta filtros por first_name, last_name y búsqueda textual.
     """
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['first_name', 'last_name']
+    search_fields = ['first_name', 'last_name']
+    ordering_fields = ['id', 'first_name', 'last_name']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if queryset.exists():
+        queryset = self.filter_queryset(self.get_queryset())
+        if queryset.exists() or self.get_queryset().exists():
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        # Fallback a datos simulados en memoria
+        # Fallback a datos simulados en memoria si la BD está completamente vacía
         return Response(MOCK_TEACHERS, status=status.HTTP_200_OK)
 
 
@@ -120,14 +138,18 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Course.
     Proporciona endpoints para listar y detallar cursos en /api/courses/.
-    Optimiza consultas con select_related('teacher') para incluir información del docente.
+    Soporta filtros por teacher (ID), name, búsqueda por docente y ordenamiento.
     """
     queryset = Course.objects.select_related('teacher').all()
     serializer_class = CourseSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['teacher', 'name']
+    search_fields = ['name', 'teacher__first_name', 'teacher__last_name']
+    ordering_fields = ['id', 'name', 'teacher']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if queryset.exists():
+        queryset = self.filter_queryset(self.get_queryset())
+        if queryset.exists() or self.get_queryset().exists():
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         # Fallback a datos simulados en memoria
@@ -138,14 +160,18 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad Student.
     Proporciona endpoints sobre /api/students/.
-    Incluye prefetch_related para traer las inscripciones y asignaturas de cada estudiante.
+    Soporta filtros por first_name, last_name, búsqueda y ordenamiento.
     """
     queryset = Student.objects.prefetch_related('enrollments__course__teacher').all()
     serializer_class = StudentSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['first_name', 'last_name']
+    search_fields = ['first_name', 'last_name']
+    ordering_fields = ['id', 'first_name', 'last_name']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if queryset.exists():
+        queryset = self.filter_queryset(self.get_queryset())
+        if queryset.exists() or self.get_queryset().exists():
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         # Fallback a datos simulados en memoria
@@ -156,13 +182,17 @@ class StudentCourseViewSet(viewsets.ModelViewSet):
     """
     ViewSet DRF para la entidad StudentCourse.
     Proporciona endpoints sobre /api/student-courses/.
+    Soporta filtros por student (ID) y course (ID).
     """
     queryset = StudentCourse.objects.select_related('student', 'course').all()
     serializer_class = StudentCourseSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['student', 'course']
+    ordering_fields = ['id', 'student', 'course']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if queryset.exists():
+        queryset = self.filter_queryset(self.get_queryset())
+        if queryset.exists() or self.get_queryset().exists():
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         # Fallback a datos simulados en memoria

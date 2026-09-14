@@ -11,6 +11,7 @@ y la app 'academic' correspondiente al dominio de gestión académica.
 """
 
 from pathlib import Path
+from datetime import timedelta
 import os
 
 # Ruta base del proyecto (directorio raíz)
@@ -38,8 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Paquete externo: Django REST Framework (DRF) para creación de APIs REST
+    # Paquetes externos DRF y utilidades (Integración ej1)
     'rest_framework',
+    'django_filters',
+    'rest_framework_simplejwt',
+    'coreapi',
 
     # Aplicación local: Sistema de Gestión Académica
     'academic',
@@ -135,7 +139,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # ==============================================================================
-# CONFIGURACIÓN DE DJANGO REST FRAMEWORK
+# CONFIGURACIÓN DE DJANGO REST FRAMEWORK (Integración avanzada ej1)
 # ==============================================================================
 REST_FRAMEWORK = {
     # Renderers por defecto (JSON y Navegador interactivo de DRF)
@@ -147,6 +151,29 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
     ],
+    # Backends de filtrado, búsqueda y ordenamiento automático
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    # Clases de autenticación soportadas (JWT y Sesiones)
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    # Esquema automático para documentación interactiva OpenAPI (/docs/ y /openapi/)
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',
+}
+
+# ==============================================================================
+# CONFIGURACIÓN DE TOKENS JWT (SimpleJWT - Configuración ej1)
+# ==============================================================================
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

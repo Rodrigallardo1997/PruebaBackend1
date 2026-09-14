@@ -157,3 +157,44 @@ class AcademicViewAndAPITests(TestCase):
         # DELETE (Desinscribir)
         del_res = self.api_client.delete(f'/api/student-courses/{enrollment_id}/')
         self.assertEqual(del_res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_jwt_token_obtain_and_refresh(self):
+        """Prueba la generación y refresco de tokens JWT (SimpleJWT - ej1)."""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        test_user = User.objects.create_user(username='testjwtuser', password='testpassword123')
+
+        # Obtener Token
+        token_res = self.api_client.post('/api/token/', {
+            'username': 'testjwtuser',
+            'password': 'testpassword123'
+        }, format='json')
+        self.assertEqual(token_res.status_code, status.HTTP_200_OK)
+        self.assertIn('access', token_res.data)
+        self.assertIn('refresh', token_res.data)
+
+        refresh_token = token_res.data['refresh']
+
+        # Refrescar Token
+        refresh_res = self.api_client.post('/api/token/refresh/', {
+            'refresh': refresh_token
+        }, format='json')
+        self.assertEqual(refresh_res.status_code, status.HTTP_200_OK)
+        self.assertIn('access', refresh_res.data)
+
+    def test_advanced_filtering_and_search(self):
+        """Prueba el filtrado con DjangoFilterBackend y búsqueda (SearchFilter - ej1)."""
+        # Filtrar por profesor ID
+        filter_res = self.api_client.get(f'/api/courses/?teacher={self.teacher.id}')
+        self.assertEqual(filter_res.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(filter_res.data), 1)
+
+        # Búsqueda textual con ?search=
+        search_res = self.api_client.get('/api/courses/?search=Bases')
+        self.assertEqual(search_res.status_code, status.HTTP_200_OK)
+        self.assertEqual(search_res.data[0]['name'], "Bases de Datos")
+
+    def test_docs_endpoint(self):
+        """Prueba que el endpoint de documentación /docs/ responda HTTP 200."""
+        response = self.client.get('/docs/')
+        self.assertEqual(response.status_code, 200)

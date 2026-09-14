@@ -103,6 +103,7 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 | Ruta | Descripción | Operaciones Soportadas |
 | :--- | :--- | :--- |
 | `http://127.0.0.1:8000/` | **Inicio / Dashboard**: Resuelve la raíz y elimina el error 404. | Lectura y accesos directos. |
+| `http://127.0.0.1:8000/docs/` | **Documentación Interactiva (Swagger UI)**: Catálogo visual de la API. | Pruebas interactivas de endpoints y esquemas. |
 | `http://127.0.0.1:8000/teachers/` | **Docentes**: CRUD interactivo de profesores. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
 | `http://127.0.0.1:8000/courses/` | **Cursos**: CRUD interactivo de asignaturas con profesor asignado. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
 | `http://127.0.0.1:8000/students/` | **Estudiantes**: CRUD de alumnos y gestión de inscripciones de materias. | **Crear**, **Listar**, **Editar**, **Eliminar**, **Inscribir/Desinscribir**. |
@@ -110,10 +111,14 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 ### Endpoints REST API (Django REST Framework):
 | Endpoint | Métodos HTTP | Descripción |
 | :--- | :--- | :--- |
-| `http://127.0.0.1:8000/api/teachers/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Docentes. |
-| `http://127.0.0.1:8000/api/courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Asignaturas. |
-| `http://127.0.0.1:8000/api/students/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD completo para Estudiantes. |
-| `http://127.0.0.1:8000/api/student-courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD para Inscripciones de Estudiantes a Cursos. |
+| `http://127.0.0.1:8000/docs/` | `GET` | Interfaz interactiva Swagger UI de la API. |
+| `http://127.0.0.1:8000/openapi/` | `GET` | Esquema OpenAPI en formato JSON. |
+| `http://127.0.0.1:8000/api/token/` | `POST` | Obtención de tokens JWT (`access` y `refresh`) con credenciales. |
+| `http://127.0.0.1:8000/api/token/refresh/` | `POST` | Renovación de token de acceso JWT vencido. |
+| `http://127.0.0.1:8000/api/teachers/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD de Docentes (filtros: `first_name`, `last_name`, `search`, `ordering`). |
+| `http://127.0.0.1:8000/api/courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD de Asignaturas (filtros: `teacher`, `name`, `search`, `ordering`). |
+| `http://127.0.0.1:8000/api/students/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD de Estudiantes (filtros: `first_name`, `last_name`, `search`, `ordering`). |
+| `http://127.0.0.1:8000/api/student-courses/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD de Inscripciones (filtros: `student`, `course`). |
 | `http://127.0.0.1:8000/admin/` | `GET`, `POST` | Panel de Administración de Django. |
 
 ---
@@ -143,6 +148,18 @@ A continuación se presentan las respuestas modelo para la defensa oral del proy
 > **Respuesta:**  
 > - Para el error 404: Se definió la vista `index_view` en `academic/views.py` y se registró la ruta vacía `path('', index_view, name='home')` en `academic/urls.py`, la cual se incluye en `academic_project/urls.py` mediante `path('', include('academic.urls'))`. De esta forma, al ingresar a `http://127.0.0.1:8000/`, el servidor devuelve un panel dashboard de inicio con código de estado HTTP 200.
 > - Para el fallback: Los `ViewSets` en `views.py` verifican si existen registros en la base de datos relacional (`queryset.exists()`). Si la base de datos está vacía, retornan de forma transparente las colecciones estructuradas en memoria desde `mock_data.py`, garantizando que la API siempre responda con datos válidos ante cualquier escenario.
+
+### ❓ Pregunta 5: ¿Cómo funciona la autenticación con Tokens JWT (`SimpleJWT`) integrada en el proyecto?
+> **Respuesta:**  
+> La autenticación JWT (*JSON Web Tokens*) es un mecanismo sin estado (*stateless*). En `urls.py` expusimos el endpoint `POST /api/token/` (`TokenObtainPairView`), donde el cliente envía sus credenciales (`username` y `password`) y el servidor le retorna un **Access Token** (con vigencia de 15 minutos) y un **Refresh Token** (con vigencia de 1 día). Para acceder a recursos protegidos, el cliente envía en los encabezados HTTP: `Authorization: Bearer <access_token>`. Cuando el token de acceso expira, se utiliza el endpoint `POST /api/token/refresh/` para obtener un nuevo token de acceso sin solicitar nuevamente la contraseña al usuario.
+
+### ❓ Pregunta 6: ¿Cómo funcionan los filtros en los endpoints con `django-filter` y `SearchFilter`?
+> **Respuesta:**  
+> Configuramos `DjangoFilterBackend` y `SearchFilter` en `REST_FRAMEWORK` de `settings.py` y en cada `ViewSet`. Esto permite que el cliente agregue parámetros de consulta en la URL, por ejemplo:
+> - Filtrar cursos por profesor: `GET /api/courses/?teacher=1`
+> - Búsqueda por texto: `GET /api/courses/?search=Backend`
+> - Ordenamiento: `GET /api/courses/?ordering=-id`
+> El ViewSet ejecuta `self.filter_queryset(self.get_queryset())`, aplicando las cláusulas `WHERE` correspondientes en SQL de forma automática y optimizada.
 
 ---
 

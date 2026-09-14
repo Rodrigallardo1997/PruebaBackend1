@@ -48,11 +48,11 @@
                     <i class="bi bi-people me-1"></i> Administrar Estudiantes
                 </a>
                 {% else %}
+                <a href="{% url 'demo' %}" class="btn btn-outline-primary btn-lg px-4 py-2 rounded-pill shadow-sm fw-semibold">
+                    <i class="bi bi-display me-2"></i> Ver Demo Básica (Solo Lectura)
+                </a>
                 <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow fw-semibold">
                     <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión para Administrar
-                </a>
-                <a href="{% url 'api-docs' %}" class="btn btn-outline-info btn-lg px-4 py-2 rounded-pill shadow-sm fw-semibold text-dark">
-                    <i class="bi bi-file-earmark-code me-2"></i> Explorar Documentación API (Swagger)
                 </a>
                 {% endif %}
             </div>
@@ -183,9 +183,9 @@
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="p-3 bg-light rounded-3 h-100">
-                    <div class="text-info fs-3 mb-2"><i class="bi bi-file-earmark-code-fill"></i></div>
-                    <h6 class="fw-bold text-dark">OpenAPI & Swagger</h6>
-                    <p class="small text-muted mb-0">Documentación viva interactiva en <code>/docs/</code> para probar todos los métodos HTTP de la API.</p>
+                    <div class="text-info fs-3 mb-2"><i class="bi bi-display-fill"></i></div>
+                    <h6 class="fw-bold text-dark">Demo Pública</h6>
+                    <p class="small text-muted mb-0">Vista previa interactiva en <code>/demo/</code> para explorar los registros académicos en modo solo lectura.</p>
                 </div>
             </div>
         </div>

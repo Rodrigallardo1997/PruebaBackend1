@@ -129,7 +129,12 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                     <li class="nav-item">
                         <a class="nav-link {% if active_tab == 'home' %}active{% endif %}" href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i> Inicio / Demo
+                            <i class="bi bi-house-door me-1"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'demo' %}active{% endif %}" href="{% url 'demo' %}">
+                            <i class="bi bi-display me-1"></i> Demo del Sistema (Solo Lectura)
                         </a>
                     </li>
                     {% if request.user.is_authenticated %}
@@ -149,25 +154,16 @@
                         </a>
                     </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if active_tab == 'docs' %}active{% endif %}" href="{% url 'api-docs' %}">
-                            <i class="bi bi-file-earmark-code me-1"></i> Documentación API
-                        </a>
-                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2">
                     <!-- Enlaces directos a los endpoints REST (DRF) -->
                     <div class="dropdown">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-code-slash"></i> API & JWT
+                            <i class="bi bi-code-slash"></i> API REST
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
-                            <li><h6 class="dropdown-header text-uppercase">Documentación & Esquema</h6></li>
-                            <li><a class="dropdown-item" href="{% url 'api-docs' %}"><i class="bi bi-file-earmark-code text-info me-2"></i><strong>/docs/</strong> (Swagger UI)</a></li>
-                            <li><a class="dropdown-item" href="{% url 'openapi-schema' %}" target="_blank"><i class="bi bi-braces text-secondary me-2"></i>/openapi/ (JSON)</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header text-uppercase">Endpoints REST</h6></li>
+                            <li><h6 class="dropdown-header text-uppercase">Endpoints JSON</h6></li>
                             <li><a class="dropdown-item" href="/api/teachers/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/teachers/</a></li>
                             <li><a class="dropdown-item" href="/api/courses/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/courses/</a></li>
                             <li><a class="dropdown-item" href="/api/students/" target="_blank"><i class="bi bi-braces text-primary me-2"></i>/api/students/</a></li>

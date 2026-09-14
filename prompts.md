@@ -257,3 +257,19 @@ La IA implementó:
 3. Protección de las vistas CRUD (`teachers_view`, `courses_view`, `students_view`) mediante el decorador `@login_required(login_url='login')`.
 4. Rediseño de `index.html` como Landing Page pública y de demostración abierta con accesos informativos.
 5. Navbar responsivo y dinámico en `base.html` que detecta si el usuario está autenticado o en modo visitante.
+
+---
+
+## Prompt 8: Vista de Demostración Básica del Sistema (Solo Lectura - Sin CRUD)
+
+### 📥 Prompt Enviado:
+```text
+Crea una vista pública de demostración básica del sistema en /demo/ que permita visualizar en tiempo real cómo se presentan los datos de docentes, cursos y estudiantes mediante JavaScript fetch(), pero en modo solo lectura y sin ninguna opción ni botón de CRUD (sin crear, editar ni eliminar registros).
+```
+
+### 📤 Respuesta Generada por la IA:
+La IA implementó:
+1. Vista `demo_view` en `academic/views.py` y ruta `path('demo/', demo_view, name='demo')`.
+2. Plantilla interactiva `demo.html` con pestañas para Docentes, Cursos y Estudiantes.
+3. Consumo asíncrono con `Promise.all()` y `fetch()` hacia los endpoints `/api/teachers/`, `/api/courses/` y `/api/students/`.
+4. Tablas en modo estrictamente de solo lectura, con filtros de búsqueda instantánea y sin botones de acción CRUD.

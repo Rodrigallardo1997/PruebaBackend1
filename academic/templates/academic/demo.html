@@ -1,0 +1,309 @@
+{% extends "academic/base.html" %}
+
+{% block title %}Demostración Básica del Sistema (Solo Lectura) - Gestión Académica{% endblock %}
+
+{% block content %}
+<!--
+    Plantilla: demo.html (Ruta "/demo/")
+    Demostración Básica Pública (Solo Lectura - Sin opciones CRUD)
+    Estudiante: Rodrigo Gallardo | Docente: Marcelo Alvarado
+-->
+
+<!-- ENCABEZADO DE DEMOSTRACIÓN -->
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-info-subtle text-info border border-info-subtle py-2 px-3 rounded-pill fw-semibold">
+                <i class="bi bi-eye-fill me-1"></i> Vista de Demostración Pública
+            </span>
+            <span class="badge bg-secondary-subtle text-secondary py-2 px-3 rounded-pill">
+                <i class="bi bi-shield-lock me-1"></i> Modo Solo Lectura (Sin CRUD)
+            </span>
+        </div>
+        <h2 class="h3 fw-bold text-dark mb-1">
+            <i class="bi bi-display text-primary me-2"></i>Demostración Básica del Sistema
+        </h2>
+        <p class="text-muted mb-0">
+            Visualización en tiempo real de los datos académicos consumidos asíncronamente vía <code>fetch()</code> desde la API REST.
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end align-self-center mt-3 mt-md-0">
+        {% if not request.user.is_authenticated %}
+        <a href="{% url 'login' %}" class="btn btn-primary rounded-pill shadow-sm px-4 fw-semibold">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión para Administrar
+        </a>
+        {% else %}
+        <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill fs-6">
+            <i class="bi bi-check-circle me-1"></i> Sesión activa: {{ request.user.username }}
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- AVISO INFORMATIVO -->
+<div class="alert alert-primary bg-primary bg-opacity-10 border-0 rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-info-circle-fill text-primary fs-4 me-3 flex-shrink-0"></i>
+        <div class="small">
+            <strong>Modo Demostración:</strong> En esta vista no se muestran botones de creación, edición ni eliminación de registros (CRUD protegido). 
+            Los datos se consultan en tiempo real a través de los endpoints REST enmascarados con JavaScript.
+        </div>
+    </div>
+    <button class="btn btn-sm btn-outline-primary rounded-pill text-nowrap ms-3" onclick="loadAllData()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Datos
+    </button>
+</div>
+
+<!-- PESTAÑAS DE VISUALIZACIÓN (DOCENTES, CURSOS, ESTUDIANTES) -->
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white border-bottom pt-3 px-4">
+        <ul class="nav nav-pills card-header-pills" id="demoTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill fw-semibold me-2" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses-pane" type="button" role="tab">
+                    <i class="bi bi-book me-1"></i> Cursos y Asignaturas (<span id="coursesCount">...</span>)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill fw-semibold me-2" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers-pane" type="button" role="tab">
+                    <i class="bi bi-person-badge me-1"></i> Docentes (<span id="teachersCount">...</span>)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill fw-semibold" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-pane" type="button" role="tab">
+                    <i class="bi bi-people me-1"></i> Estudiantes y Matrículas (<span id="studentsCount">...</span>)
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        <!-- SPINNER DE CARGA GLOBAL -->
+        <div id="demoLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Cargando datos...</span>
+            </div>
+            <p class="text-muted small mt-2 mb-0">Consultando endpoints REST vía <code>fetch()</code>...</p>
+        </div>
+
+        <div class="tab-content d-none" id="demoTabContent">
+            
+            <!-- PANEL 1: CURSOS -->
+            <div class="tab-pane fade show active" id="courses-pane" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">Catálogo de Asignaturas</h5>
+                    <div class="w-25">
+                        <input type="text" id="courseFilter" class="form-control form-control-sm rounded-pill" placeholder="Buscar curso...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border rounded">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Nombre de la Asignatura</th>
+                                <th>Profesor a Cargo</th>
+                                <th style="width: 140px;" class="text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coursesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL 2: DOCENTES -->
+            <div class="tab-pane fade" id="teachers-pane" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">Cuerpo Docente</h5>
+                    <div class="w-25">
+                        <input type="text" id="teacherFilter" class="form-control form-control-sm rounded-pill" placeholder="Buscar profesor...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border rounded">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Nombre Completo</th>
+                                <th style="width: 140px;" class="text-center">Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL 3: ESTUDIANTES -->
+            <div class="tab-pane fade" id="students-pane" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">Alumnos Matriculados</h5>
+                    <div class="w-25">
+                        <input type="text" id="studentFilter" class="form-control form-control-sm rounded-pill" placeholder="Buscar estudiante...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border rounded">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Asignaturas Inscritas</th>
+                                <th style="width: 140px;" class="text-center">Matrícula</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- TARJETA INFORMATIVA INFERIOR -->
+<div class="card border-0 bg-dark text-white rounded-4 p-4 shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h5 class="fw-bold mb-1"><i class="bi bi-lock-fill text-warning me-2"></i>¿Necesitas realizar operaciones CRUD?</h5>
+            <p class="text-white-50 small mb-0">
+                Inicia sesión con credenciales de usuario para habilitar los formularios de creación, actualización y eliminación de docentes, asignaturas y matrículas.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'login' %}" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark shadow-sm">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Ir al Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allCourses = [];
+    let allTeachers = [];
+    let allStudents = [];
+
+    async function loadAllData() {
+        document.getElementById('demoLoading').classList.remove('d-none');
+        document.getElementById('demoTabContent').classList.add('d-none');
+
+        try {
+            const [teachersRes, coursesRes, studentsRes] = await Promise.all([
+                fetch('/api/teachers/'),
+                fetch('/api/courses/'),
+                fetch('/api/students/')
+            ]);
+
+            allTeachers = await teachersRes.json();
+            allCourses = await coursesRes.json();
+            allStudents = await studentsRes.json();
+
+            // Renderizar contadores
+            document.getElementById('teachersCount').textContent = allTeachers.length;
+            document.getElementById('coursesCount').textContent = allCourses.length;
+            document.getElementById('studentsCount').textContent = allStudents.length;
+
+            renderCourses(allCourses);
+            renderTeachers(allTeachers);
+            renderStudents(allStudents);
+
+            document.getElementById('demoLoading').classList.add('d-none');
+            document.getElementById('demoTabContent').classList.remove('d-none');
+        } catch (error) {
+            console.error('Error cargando demo:', error);
+            document.getElementById('demoLoading').innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Error al cargar datos de demostración.
+                </div>
+            `;
+        }
+    }
+
+    function renderCourses(courses) {
+        const tbody = document.getElementById('coursesTableBody');
+        tbody.innerHTML = '';
+        if (courses.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No hay asignaturas registradas.</td></tr>';
+            return;
+        }
+        courses.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge bg-secondary-subtle text-secondary">#${c.id}</span></td>
+                <td class="fw-semibold text-dark">${c.name}</td>
+                <td><span class="badge bg-primary-subtle text-primary"><i class="bi bi-person me-1"></i>${c.teacher_name || 'Sin Asignar'}</span></td>
+                <td class="text-center"><span class="badge bg-success-subtle text-success">Activa</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderTeachers(teachers) {
+        const tbody = document.getElementById('teachersTableBody');
+        tbody.innerHTML = '';
+        if (teachers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay docentes registrados.</td></tr>';
+            return;
+        }
+        teachers.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge bg-secondary-subtle text-secondary">#${t.id}</span></td>
+                <td>${t.first_name}</td>
+                <td>${t.last_name}</td>
+                <td class="fw-semibold text-dark">${t.full_name || (t.first_name + ' ' + t.last_name)}</td>
+                <td class="text-center"><span class="badge bg-warning-subtle text-dark">Docente</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderStudents(students) {
+        const tbody = document.getElementById('studentsTableBody');
+        tbody.innerHTML = '';
+        if (students.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay estudiantes registrados.</td></tr>';
+            return;
+        }
+        students.forEach(s => {
+            const tr = document.createElement('tr');
+            let coursesHtml = '<span class="text-muted small">Sin cursos</span>';
+            if (s.enrolled_courses && s.enrolled_courses.length > 0) {
+                coursesHtml = s.enrolled_courses.map(courseName => 
+                    `<span class="badge bg-info-subtle text-dark me-1 mb-1">${courseName}</span>`
+                ).join('');
+            }
+            tr.innerHTML = `
+                <td><span class="badge bg-secondary-subtle text-secondary">#${s.id}</span></td>
+                <td>${s.first_name}</td>
+                <td>${s.last_name}</td>
+                <td>${coursesHtml}</td>
+                <td class="text-center"><span class="badge bg-primary-subtle text-primary">Regular</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Filtros de búsqueda en tiempo real
+    document.getElementById('courseFilter').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        renderCourses(allCourses.filter(c => c.name.toLowerCase().includes(q) || (c.teacher_name && c.teacher_name.toLowerCase().includes(q))));
+    });
+
+    document.getElementById('teacherFilter').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        renderTeachers(allTeachers.filter(t => (t.first_name + ' ' + t.last_name).toLowerCase().includes(q)));
+    });
+
+    document.getElementById('studentFilter').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        renderStudents(allStudents.filter(s => (s.first_name + ' ' + s.last_name).toLowerCase().includes(q)));
+    });
+
+    // Iniciar carga al montar la página
+    document.addEventListener('DOMContentLoaded', loadAllData);
+</script>
+{% endblock %}

@@ -102,10 +102,10 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 ### Vistas Web (Frontend Enmascarado y Control de Acceso):
 | Ruta | Tipo de Acceso | Descripción | Operaciones Soportadas |
 | :--- | :--- | :--- | :--- |
-| `http://127.0.0.1:8000/` | **Público / Abierto** | **Vista Gratuita (Landing & Demo)**: Explica el proyecto, arquitectura y catálogo. | Demostración y enlaces a Login/Docs. |
+| `http://127.0.0.1:8000/` | **Público / Abierto** | **Inicio / Dashboard**: Explica el proyecto, arquitectura y catálogo. | Navegación e información general. |
+| `http://127.0.0.1:8000/demo/` | **Público / Abierto** | **Demo Básica (Solo Lectura)**: Visualización en tiempo real de los datos sin opciones CRUD. | **Solo lectura** de docentes, cursos y alumnos con `fetch()`. |
 | `http://127.0.0.1:8000/login/` | **Público / Abierto** | **Inicio de Sesión**: Formulario de autenticación de usuarios. | Login con redirección inteligente `?next=`. |
 | `http://127.0.0.1:8000/logout/` | **Público / Abierto** | **Cierre de Sesión**: Cierra sesión y retorna al inicio. | Logout de sesión activa. |
-| `http://127.0.0.1:8000/docs/` | **Público / Abierto** | **Documentación Swagger UI**: Pruebas interactivas de la API. | Visualización y test de endpoints REST. |
 | `http://127.0.0.1:8000/teachers/` | 🔒 **Requiere Login** | **Docentes**: CRUD interactivo de profesores. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
 | `http://127.0.0.1:8000/courses/` | 🔒 **Requiere Login** | **Cursos**: CRUD interactivo de asignaturas con profesor asignado. | **Crear**, **Listar**, **Editar**, **Eliminar**. |
 | `http://127.0.0.1:8000/students/` | 🔒 **Requiere Login** | **Estudiantes**: CRUD de alumnos y gestión de inscripciones de materias. | **Crear**, **Listar**, **Editar**, **Eliminar**, **Inscribir/Desinscribir**. |
@@ -113,8 +113,6 @@ El sistema quedará disponible en: **`http://127.0.0.1:8000/`**
 ### Endpoints REST API (Django REST Framework):
 | Endpoint | Métodos HTTP | Descripción |
 | :--- | :--- | :--- |
-| `http://127.0.0.1:8000/docs/` | `GET` | Interfaz interactiva Swagger UI de la API. |
-| `http://127.0.0.1:8000/openapi/` | `GET` | Esquema OpenAPI en formato JSON. |
 | `http://127.0.0.1:8000/api/token/` | `POST` | Obtención de tokens JWT (`access` y `refresh`) con credenciales. |
 | `http://127.0.0.1:8000/api/token/refresh/` | `POST` | Renovación de token de acceso JWT vencido. |
 | `http://127.0.0.1:8000/api/teachers/` | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` | CRUD de Docentes (filtros: `first_name`, `last_name`, `search`, `ordering`). |

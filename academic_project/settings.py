@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
-    'coreapi',
 
     # Aplicación local: Sistema de Gestión Académica
     'academic',
@@ -162,8 +161,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    # Esquema automático para documentación interactiva OpenAPI (/docs/ y /openapi/)
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',
 }
 
 # ==============================================================================

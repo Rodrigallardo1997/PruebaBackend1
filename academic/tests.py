@@ -226,7 +226,8 @@ class AcademicViewAndAPITests(TestCase):
         self.assertEqual(search_res.status_code, status.HTTP_200_OK)
         self.assertEqual(search_res.data[0]['name'], "Bases de Datos")
 
-    def test_docs_endpoint(self):
-        """Prueba que el endpoint de documentación /docs/ responda HTTP 200."""
-        response = self.client.get('/docs/')
+    def test_demo_view_public_read_only(self):
+        """Prueba que la vista de demostración /demo/ responda HTTP 200 a visitantes sin login."""
+        response = self.client.get('/demo/')
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'academic/demo.html')

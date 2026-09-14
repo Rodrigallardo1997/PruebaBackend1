@@ -140,16 +140,18 @@ def teachers_view(request):
     return render(request, 'academic/teachers.html', context)
 
 
-def docs_view(request):
+def demo_view(request):
     """
-    Vista frontend para la Documentación Interactiva de la API (Swagger UI).
-    Renderiza 'docs.html' conectado con el esquema OpenAPI generado automáticamente por DRF.
+    Vista pública de demostración del sistema (Modo Solo Lectura, sin CRUD).
+    Permite a visitantes ver cómo se visualizan las tablas y datos del sistema
+    (Docentes, Cursos y Estudiantes) consumidos asíncronamente mediante Fetch API
+    sin ofrecer ninguna opción de creación, edición o eliminación.
     """
     context = {
-        'page_title': 'Documentación de la API - OpenAPI / Swagger',
-        'active_tab': 'docs'
+        'page_title': 'Demostración del Sistema (Solo Lectura)',
+        'active_tab': 'demo'
     }
-    return render(request, 'academic/docs.html', context)
+    return render(request, 'academic/demo.html', context)
 
 
 # ==============================================================================
